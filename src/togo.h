@@ -48,16 +48,15 @@ enum common_ret {
 };
 
 enum log_level {
-	ERROR, DEBUG, INFO,TEST
+	ERROR, DEBUG, INFO, TEST
 };
 
 typedef struct togo_c {
-	char *version; /* Togo版本号*/
-	char *ip; /* ip地址 */
-	int port; /* 端口号 */
-	int daemon; /* 是否在后台运行程序*/
-	int worker_thread_num; /* 工作线程数*/
+	char *version;
+	char *ip;
+	int port;
+	int daemon;
+	int worker_thread_num;
 } TOGO_C;
-
 
 #endif
