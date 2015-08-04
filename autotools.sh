@@ -1,0 +1,1 @@
+autoscan && aclocal && autoconf && autoheader && automake --add-missing  && touch NEWS &&  touch README  && touch AUTHORS && touch ChangeLog && automake --add-missing
