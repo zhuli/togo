@@ -96,8 +96,8 @@ static TOGO_THREAD_ITEM * togo_q_pop(TOGO_WORKER_THREAD *worker_thread);
 
 BOOL togo_server_init()
 {
-	togo_mt_init(); //主线程
-	togo_wt_init(); //工作线程
+	togo_mt_init();
+	togo_wt_init();
 	pthread_join(server_main_thread, NULL);
 }
 
