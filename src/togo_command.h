@@ -8,12 +8,14 @@
 #define TOGO_COMMAND_H
 
 #define TOGO_COMMAND_TAG_MAX 10
+#define TOGO_COMMAND_MAX_SIZE 25
 
 #define TOGO_SBUF_START "TOGO_S"
 #define TOGO_SBUF_END "TOGO_E\r\n"
 #define TOGO_SBUF_OK "OK"
 #define TOGO_SBUF_ERROR "ERROR"
 #define TOGO_SBUF_NULL "NULL"
+#define TOGO_SBUF_COMMAND_TOO_BIG "COMMAND_TOO_BIG"
 #define TOGO_SBUF_TOO_BIG "TOO_BIG\r\n"
 
 #define togo_send_data togo_command_build_send

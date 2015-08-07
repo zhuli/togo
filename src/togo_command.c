@@ -92,6 +92,12 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 	/* Split the command */
 	TOGO_COMMAND_TAG command_tag[TOGO_COMMAND_TAG_MAX];
 	int ntag = togo_command_split(socket_item->rcurr, command_tag);
+	if (ntag == 0) {
+		togo_command_build_send(socket_item, TOGO_SBUF_COMMAND_TOO_BIG,
+				strlen(TOGO_SBUF_COMMAND_TOO_BIG));
+		togo_wt_send_cb(socket_item);
+		return TRUE;
+	}
 
 	socket_item->rbytes -= (new_curr - socket_item->rcurr);
 	socket_item->rcurr = new_curr;
@@ -140,7 +146,7 @@ void togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 
 		togo_command_close_read_big_data(socket_item);
 	} else {
-		/* There is not enough space, so we need to  continue to read the big data!*/
+		/* There is no enough space, so we need to  continue to read the big data!*/
 
 		togo_memcpy(socket_item->bcurr, socket_item->rcurr,
 				socket_item->rbytes);
@@ -243,6 +249,12 @@ static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
 				*p = '\0';
 				command_tag[ntag].value = t;
 				command_tag[ntag].length = p - t;
+
+				/* The command is too large */
+				if (command_tag[ntag].length > TOGO_COMMAND_MAX_SIZE) {
+					return 0;
+				}
+
 				ntag++;
 				x = 0;
 			}
@@ -257,6 +269,11 @@ static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
 			command_tag[ntag].value = t;
 			command_tag[ntag].length = p - t;
 			ntag++;
+
+			/* The command is too large */
+			if (command_tag[ntag].length > TOGO_COMMAND_MAX_SIZE) {
+				return 0;
+			}
 		}
 	}
 
