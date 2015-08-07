@@ -15,6 +15,7 @@
 #define togo_strchr(s1, c)   strchr((const char *) s1, (int) c)
 #define togo_strstr(s1, s2)  strstr((const char *) s1, (const char *) s2)
 #define togo_strlen(s)       strlen((const char *) s)
+#define togo_strcpy strcpy
 
 int togo_encode_base64(u_char *dst, u_char *src);
 int togo_decode_base64(u_char *dst, u_char *src);

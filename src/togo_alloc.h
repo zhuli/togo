@@ -12,7 +12,6 @@
 #define togo_memset(buf, c, n)     (void) memset(buf, c, n)
 #define togo_free free
 #define togo_memcpy memcpy
-#define togo_strcpy strcpy
 #define togo_realloc realloc
 #define togo_memchr memchr
 #define togo_memmove memmove

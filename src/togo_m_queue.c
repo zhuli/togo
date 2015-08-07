@@ -349,6 +349,7 @@ void togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	togo_send_data(socket_item, str, strlen(str));
 
 	togo_pool_free_data(queue->pool, str);
+
 }
 
 static TOGO_M_QUEUE * togo_m_queue_create(u_char * name)

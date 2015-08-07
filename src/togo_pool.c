@@ -44,6 +44,7 @@ TOGO_POOL * togo_pool_create(size_t size)
 
 	pool->size = size;
 	pool->max = size - sizeof(TOGO_POOL_BLOCK);
+	pool->total_size = size;
 
 	pool->total_block = 1;
 	pool->block = block;
@@ -283,7 +284,7 @@ void togo_pool_free_large(TOGO_POOL * pool, void * lp)
 		if (pool->large == large) {
 			pool->large = next;
 		}
-
+		pool->total_size -= large->size + sizeof(TOGO_POOL_LARGE);
 		togo_free(large);
 	}
 
@@ -368,6 +369,9 @@ static void * togo_pool_alloc_block(TOGO_POOL * pool, size_t size)
 	if (try >= tries) {
 		pool->block_current = new_block;
 	}
+
+	pool->total_size += pool->size;
+
 	return togo_pool_build_data(pool, size, p, new_block);
 }
 
@@ -375,8 +379,10 @@ static void * togo_pool_alloc_large(TOGO_POOL * pool, size_t size)
 {
 	void * p;
 	TOGO_POOL_LARGE * new_large;
+	size_t all_size;
 
-	new_large = togo_alloc(sizeof(TOGO_POOL_LARGE) + size);
+	all_size = sizeof(TOGO_POOL_LARGE) + size;
+	new_large = togo_alloc(all_size);
 	if (new_large == NULL) {
 		togo_log(ERROR, "malloc a pool_large fail");
 		pthread_mutex_unlock(&pool->mlock);
@@ -394,7 +400,9 @@ static void * togo_pool_alloc_large(TOGO_POOL * pool, size_t size)
 		pool->large->prev = new_large;
 	}
 
+	pool->total_size += all_size;
 	pool->large = new_large;
+
 	return p;
 }
 

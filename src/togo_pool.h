@@ -70,6 +70,7 @@ struct togo_pool_large {
 struct togo_pool {
 	size_t size;
 	size_t max;
+	size_t total_size;
 
 	uint32_t total_block;
 	TOGO_POOL_BLOCK * block;
