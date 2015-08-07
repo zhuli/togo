@@ -270,12 +270,13 @@ static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
 		if (command_tag[z].value != t) {
 			command_tag[ntag].value = t;
 			command_tag[ntag].length = p - t;
-			ntag++;
 
 			/* The command is too large */
 			if (command_tag[ntag].length > TOGO_COMMAND_MAX_SIZE) {
 				return -1;
 			}
+
+			ntag++;
 		}
 	}
 
