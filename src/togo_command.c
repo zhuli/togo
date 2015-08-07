@@ -92,7 +92,9 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 	/* Split the command */
 	TOGO_COMMAND_TAG command_tag[TOGO_COMMAND_TAG_MAX];
 	int ntag = togo_command_split(socket_item->rcurr, command_tag);
-	if (ntag == 0) {
+
+	/* Command is too large! */
+	if (ntag == -1) {
 		togo_command_build_send(socket_item, TOGO_SBUF_COMMAND_TOO_BIG,
 				strlen(TOGO_SBUF_COMMAND_TOO_BIG));
 		togo_wt_send_cb(socket_item);
@@ -192,11 +194,11 @@ void togo_command_build_send(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 	size_t sbuf_size = socket_item->sbuf_size;
 	size_t new_buf_size = len + TOGO_S_SBUF_SPACE_SIZE;
 	if (new_buf_size > sbuf_size) {
-		if (new_buf_size >= TOGO_S_SBUF_MAX_SIZE) {
-			size_t big_size = strlen(TOGO_SBUF_TOO_BIG);
-			togo_memcpy(socket_item->sbuf, TOGO_SBUF_TOO_BIG, big_size);
-			socket_item->ssize = big_size;
 
+		/* Can only send data is less then TOGO_S_SBUF_MAX_SIZE*/
+		if (new_buf_size >= TOGO_S_SBUF_MAX_SIZE) {
+			togo_command_build_send(socket_item, TOGO_SBUF_TOO_BIG,
+					togo_strlen(TOGO_SBUF_TOO_BIG));
 			return;
 		}
 
@@ -252,7 +254,7 @@ static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
 
 				/* The command is too large */
 				if (command_tag[ntag].length > TOGO_COMMAND_MAX_SIZE) {
-					return 0;
+					return -1;
 				}
 
 				ntag++;
@@ -272,7 +274,7 @@ static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
 
 			/* The command is too large */
 			if (command_tag[ntag].length > TOGO_COMMAND_MAX_SIZE) {
-				return 0;
+				return -1;
 			}
 		}
 	}
