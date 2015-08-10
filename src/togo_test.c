@@ -149,14 +149,98 @@ void togo_string_test()
 		togo_exit();
 	}
 
-	//togo_strnstr(u_char *s1, char *s2, size_t len)
-	char * xxx = togo_strnstr("woshishen", "shi", 3);
-	if (*xxx == 's') {
+	//togo_cpystrn(u_char *s1, char *s2, size_t len)
+	togo_cpystrn(dst, "woshishen", 8);
+	if (togo_strcmp(dst, "woshishe") == 0) {
 		togo_log(DEBUG,
-				"Testing function:togo_strnstr .............................OK ");
+				"Testing function:togo_cpystrn .............................OK ");
 	} else {
 		togo_log(DEBUG,
-				"Testing function:togo_strnstr .............................FAIL ");
+				"Testing function:togo_cpystrn .............................FAIL %s",
+				dst);
+		togo_exit();
+	}
+
+	//togo_strtolower
+	togo_cpystrn(dst, "WOSHISHEN", 9);
+	char * x111 = togo_strtolower(dst);
+	if (togo_strcmp(x111, "woshishen") == 0) {
+		togo_log(DEBUG,
+				"Testing function:togo_strtolower .............................OK ");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_strtolower .............................FAIL ");
+		togo_exit();
+	}
+
+	//togo_strtolower
+	togo_cpystrn(dst, "woshishen", 9);
+	char * x222 = togo_strtoupper(dst);
+	if (togo_strcmp(x222, "WOSHISHEN") == 0) {
+		togo_log(DEBUG,
+				"Testing function:togo_strtoupper .............................OK ");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_strtoupper .............................FAIL ");
+		togo_exit();
+	}
+
+	//togo_strpos
+	char * ddd = "woshishen";
+	int ddds = togo_strpos(ddd, 'i');
+	if (ddds == 4) {
+		togo_log(DEBUG,
+				"Testing function:togo_strpos .............................OK ");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_strpos .............................FAIL ");
+		togo_exit();
+	}
+
+	//togo_strrpos
+	int ddds2 = togo_strrpos(ddd, 'i');
+	if (ddds2 == 4) {
+		togo_log(DEBUG,
+				"Testing function:togo_strrpos .............................OK ");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_strrpos .............................FAIL ");
+		togo_exit();
+	}
+
+	//togo_trim
+	togo_cpystrn(dst, "   woshishen   ", 15);
+	char * dst1 = togo_trim(dst);
+	if (togo_strcmp(dst1, "woshishen") == 0) {
+		togo_log(DEBUG,
+				"Testing function:togo_trim .............................OK");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_trim .............................FAIL");
+		togo_exit();
+	}
+
+	//togo_ltrim
+	togo_cpystrn(dst, "   woshishen   ", 15);
+	char * dst2 = togo_ltrim(dst);
+	if (togo_strcmp(dst2, "woshishen   ") == 0) {
+		togo_log(DEBUG,
+				"Testing function:togo_ltrim .............................OK ");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_ltrim .............................FAIL ");
+		togo_exit();
+	}
+
+	//togo_rtrim
+	togo_cpystrn(dst, "   woshishen   ", 15);
+	char * dst3 = togo_rtrim(dst);
+	if (togo_strcmp(dst3, "   woshishen") == 0) {
+		togo_log(DEBUG,
+				"Testing function:togo_rtrim .............................OK");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_rtrim .............................FAIL ");
 		togo_exit();
 	}
 

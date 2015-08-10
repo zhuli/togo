@@ -204,45 +204,17 @@ u_char * togo_itoa(int num, u_char * str, int radix)
 	return str;
 }
 
-u_char * togo_strnstr(u_char *s1, char *s2, size_t len)
-{
-	u_char c1, c2;
-	size_t n;
-
-	c2 = *(u_char *) s2++;
-
-	n = togo_strlen(s2);
-
-	do {
-		do {
-			if (len-- == 0) {
-				return NULL;
-			}
-
-			c1 = *s1++;
-
-			if (c1 == 0) {
-				return NULL;
-			}
-
-		} while (c1 != c2);
-
-		if (n > len) {
-			return NULL;
-		}
-
-	} while (togo_strncmp(s1, (u_char *) s2, n) != 0);
-
-	return --s1;
-}
-
 u_char *togo_cpystrn(u_char *dst, u_char *src, size_t n)
 {
 	if (n == 0) {
 		return dst;
 	}
 
-	while (--n) {
+	do {
+		if (n == 0) {
+			return dst;
+		}
+
 		*dst = *src;
 
 		if (*dst == '\0') {
@@ -251,7 +223,7 @@ u_char *togo_cpystrn(u_char *dst, u_char *src, size_t n)
 
 		dst++;
 		src++;
-	}
+	} while (--n);
 
 	*dst = '\0';
 
@@ -260,18 +232,18 @@ u_char *togo_cpystrn(u_char *dst, u_char *src, size_t n)
 
 u_char * togo_strtolower(u_char *s)
 {
-	int i, len = sizeof(s);
+	int i, len = togo_strlen(s);
 	for (i = 0; i < len; i++) {
-		s[i] = (s[i] >= 'A' && s[i] <= 'Z' ? s[i] + 'a' - 'A' : s[i]);
+		s[i] = togo_tolower(s[i]);
 	}
 	return (s);
 }
 
 u_char * togo_strtoupper(u_char *s)
 {
-	int i, len = sizeof(s);
+	int i, len = togo_strlen(s);
 	for (i = 0; i < len; i++) {
-		s[i] = (s[i] >= 'a' && s[i] <= 'z' ? s[i] + 'A' - 'a' : s[i]);
+		s[i] = togo_toupper(s[i]);
 	}
 	return (s);
 }

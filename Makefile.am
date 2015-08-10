@@ -7,6 +7,3 @@ LIBS=-l pthread -l event
 confdir=${prefix}/conf
 conf_DATA=conf/togo.conf
 EXTRA_DIST=conf
-logdir=${prefix}/log
-log_DATA=log/
-EXTRA_DIST=log

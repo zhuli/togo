@@ -16,6 +16,7 @@
 #define togo_strstr(s1, s2)  strstr((const char *) s1, (const char *) s2)
 #define togo_strlen(s)       strlen((const char *) s)
 #define togo_strcpy strcpy
+#define togo_strcat strcat
 
 int togo_encode_base64(u_char *dst, u_char *src);
 int togo_decode_base64(u_char *dst, u_char *src);
@@ -31,7 +32,6 @@ int togo_atofp(u_char *line, size_t n, size_t point);
 int togo_atoi(u_char *line, size_t n);
 
 u_char * togo_itoa(int num, u_char * str, int radix);
-u_char * togo_strnstr(u_char *s1, char *s2, size_t len);
 u_char * togo_cpystrn(u_char *dst, u_char *src, size_t n);
 u_char * togo_strtolower(u_char *s);
 u_char * togo_strtoupper(u_char *s);

@@ -6,7 +6,7 @@
  */
 #include "togo.h"
 #include "togo_load.h"
-#include "togo_test.c"
+//#include "togo_test.c"
 
 static void togo_argv_init(int argc, char *argv[]);
 static void togo_config_init();
