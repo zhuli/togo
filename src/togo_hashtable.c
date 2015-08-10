@@ -17,7 +17,7 @@ static void togo_hashtable_unlock(const TOGO_HASHTABLE * hashtable,
 
 TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool)
 {
-	int i;
+	uint32_t i;
 
 	TOGO_HASHTABLE_BUCKET * bucket = togo_pool_calloc(pool,
 			sizeof(TOGO_HASHTABLE_BUCKET) * TOGO_HASHTABLE_BUCKET_NUM);
@@ -150,7 +150,7 @@ BOOL togo_hashtable_flush(TOGO_HASHTABLE * hashtable)
 	pthread_mutex_t global_lock = hashtable->global_lock;
 	pthread_mutex_lock(&global_lock); //lock
 
-	int i;
+	uint32_t i;
 	TOGO_HASHTABLE_BUCKET * bucket = hashtable->bucket;
 	for (i = 0; i < TOGO_HASHTABLE_BUCKET_NUM; i++) {
 		while (bucket->item != NULL) {

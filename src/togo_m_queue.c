@@ -416,7 +416,7 @@ static void togo_m_queue_block_create()
 {
 	TOGO_M_QUEUE_BLOCK * block_s;
 	u_char * block;
-	int i;
+	uint32_t i;
 
 	for (i = 0; i < TOGO_M_QUEUE_BLOCK_NUM; i++) {
 
