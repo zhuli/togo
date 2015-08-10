@@ -8,7 +8,6 @@
 #include "togo.h"
 #include "togo_load.h"
 
-static uint32_t togo_hashtable_hashcode(const u_char *key, size_t len);
 static uint32_t togo_hashtable_bucket(const TOGO_HASHTABLE * hashtable,
 		u_char *key, size_t len);
 static void togo_hashtable_lock(const TOGO_HASHTABLE * hashtable,
@@ -192,25 +191,9 @@ static void togo_hashtable_unlock(const TOGO_HASHTABLE * hashtable,
 static uint32_t togo_hashtable_bucket(const TOGO_HASHTABLE * hashtable,
 		u_char *key, size_t len)
 {
-	uint32_t code = togo_hashtable_hashcode(key, len);
+	int code = togo_djb_hash(key);
 	uint32_t total_bucke = hashtable->total_bucket;
-	uint32_t bucket_len = (code % total_bucke);
+	uint32_t bucket_len = abs(code % total_bucke);
 	return bucket_len;
-}
-
-static uint32_t togo_hashtable_hashcode(const u_char *key, size_t len)
-{
-	const u_char *name = (const u_char *) key;
-	unsigned long h = 0, g;
-	int i;
-
-	for (i = 0; i < len; i++) {
-		h = (h << 4) + (unsigned long) (name[i]); //hash左移4位，当前字符ASCII存入hash
-		if ((g = (h & 0xF0000000UL)) != 0)
-			h ^= (g >> 24);
-		h &= ~g;  //清空28-31位。
-	}
-
-	return (uint32_t) h;
 }
 

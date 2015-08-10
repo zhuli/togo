@@ -7,9 +7,9 @@
 #include "togo.h"
 #include "togo_load.h"
 
-uint32_t togo_djb_hash(u_char *str)
+int togo_djb_hash(u_char *str)
 {
-	uint32_t hash = 5381;
+	int hash = 5381;
 
 	while (*str) {
 		hash = ((hash << 5) + hash) + (*str++); /* times 33 */
@@ -18,9 +18,9 @@ uint32_t togo_djb_hash(u_char *str)
 	return hash;
 }
 
-uint32_t togo_murmur_hash2(u_char *data, size_t len)
+int togo_murmur_hash2(u_char *data, size_t len)
 {
-	uint32_t h, k;
+	int h, k;
 
 	h = 0 ^ len;
 

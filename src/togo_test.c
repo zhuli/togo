@@ -8,12 +8,48 @@
 #include "src/togo_init.h"
 
 static void togo_string_test(void);
+static void togo_hash_test(void);
 
 void togo_test()
 {
+	togo_hash_test();
 	togo_string_test();
 }
 
+//togo_hash.c
+void togo_hash_test()
+{
+	togo_log(DEBUG, "Testing togo_hash.c start ============================");
+	int i, j;
+
+	//togo_djb_hash
+	i = togo_djb_hash("WOSHISHEN");
+	j = togo_djb_hash("asdsadsad");
+	if (i == 321158909 && j == 1542131117) {
+		togo_log(DEBUG,
+				"Testing function:togo_djb_hash .............................OK");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_djb_hash .............................FAIL");
+		togo_exit();
+	}
+
+	//togo_murmur_hash2
+	i = togo_murmur_hash2("WOSHISHEN", togo_strlen("WOSHISHEN"));
+	j = togo_murmur_hash2("asdsadsad", togo_strlen("asdsadsad"));
+	if (i == 1501669989 && j == 844110999) {
+		togo_log(DEBUG,
+				"Testing function:togo_djb_hash .............................OK");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_djb_hash .............................FAIL");
+		togo_exit();
+	}
+
+	togo_log(DEBUG, "Testing togo_hash.c end ============================\r\n");
+}
+
+//togo_string.c
 void togo_string_test()
 {
 	togo_log(DEBUG, "Testing togo_string.c start ============================");
