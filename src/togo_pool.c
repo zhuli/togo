@@ -22,6 +22,7 @@ TOGO_POOL * togo_pool_create(size_t size)
 	size_t pool_size;
 	TOGO_POOL_BLOCK * block;
 
+	/* The min size of pool is TOGO_DEFAULT_POOL_MIN_SIZE */
 	if (TOGO_DEFAULT_POOL_MIN_SIZE > size) {
 		size = TOGO_DEFAULT_POOL_SIZE;
 	}
@@ -45,8 +46,8 @@ TOGO_POOL * togo_pool_create(size_t size)
 	pool->size = size;
 	pool->max = size - sizeof(TOGO_POOL_BLOCK);
 	pool->total_size = size;
-
 	pool->total_block = 1;
+
 	pool->block = block;
 	pool->block_current = pool->block;
 
@@ -200,12 +201,13 @@ void * togo_pool_realloc(TOGO_POOL * pool, void * p, size_t size,
 	u_char * end;
 	TOGO_POOL_BLOCK * block;
 
+	pthread_mutex_lock(&pool->mlock);
+
 	block = pool->block_current;
 	if (block == NULL || size >= new_size) {
 		return NULL;
 	}
 
-	pthread_mutex_lock(&pool->mlock);
 	data = (TOGO_POOL_DATA *) (p - sizeof(TOGO_POOL_DATA));
 
 	space = abs(block->end - block->used);
@@ -293,9 +295,10 @@ void togo_pool_free_large(TOGO_POOL * pool, void * lp)
 
 BOOL togo_pool_islarge(TOGO_POOL * pool, size_t size)
 {
-	size = size + sizeof(TOGO_POOL_DATA);
+	size_t dsize;
+	dsize = size + sizeof(TOGO_POOL_DATA);
 
-	if (size < pool->max) {
+	if (dsize < pool->max) {
 		return FALSE;
 	}
 
@@ -330,10 +333,6 @@ static void * togo_pool_alloc_block(TOGO_POOL * pool, size_t size)
 	current_block = pool->block_current;
 	if (current_block == NULL) {
 		return NULL;
-	}
-
-	if (TOGO_DEFAULT_POOL_MIN_SIZE > size) {
-		size = TOGO_DEFAULT_POOL_SIZE;
 	}
 
 	new_block = togo_alloc(block_size);

@@ -9,11 +9,72 @@
 
 static void togo_string_test(void);
 static void togo_hash_test(void);
+static void togo_pool_test(void);
 
 void togo_test()
 {
+	togo_pool_test();
 	togo_hash_test();
 	togo_string_test();
+}
+
+//togo_pool.c
+void togo_pool_test()
+{
+	togo_log(DEBUG, "Testing togo_pool.c start ============================");
+	void * p;
+	void * p1;
+
+	//togo_pool_create
+	TOGO_POOL * pool = togo_pool_create(togo_pool_size(10 * 1024));
+	if (pool->total_size == 10288 && pool->max == 10 * 1024) {
+		togo_log(DEBUG,
+				"Testing function:togo_pool_create .............................OK");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_pool_create .............................FAIL");
+		togo_exit();
+	}
+
+	//togo_pool_calloc
+	p1 = togo_pool_calloc(pool, 10 * 1024);
+	p = togo_pool_calloc(pool, 10);
+	togo_strcpy(p, "woshishen");
+	if (strcmp(p, "woshishen") == 0 && togo_strlen(p) == 9
+			&& pool->large->size == 10 * 1024) {
+		togo_log(DEBUG,
+				"Testing function:togo_pool_calloc .............................OK");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_pool_calloc .............................FAIL");
+		togo_exit();
+	}
+
+	//togo_pool_realloc(pool, 20);
+	p = togo_pool_realloc(pool, p, 10, 15);
+	togo_strcpy(p, "woshishen11234");
+	if (strcmp(p, "woshishen11234") == 0 && togo_strlen(p) == 14) {
+		togo_log(DEBUG,
+				"Testing function:togo_pool_realloc .............................OK");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_pool_realloc .............................FAIL");
+		togo_exit();
+	}
+
+	//togo_pool_free_data
+	togo_pool_free_data(pool, p);
+	togo_pool_free_large(pool, p1);
+
+	if (pool->large == NULL) {
+		togo_log(DEBUG,
+				"Testing function:togo_pool_free_large .............................OK");
+	} else {
+		togo_log(DEBUG,
+				"Testing function:togo_pool_free_large .............................FAIL");
+		togo_exit();
+	}
+	togo_log(DEBUG, "Testing togo_pool.c end ============================\r\n");
 }
 
 //togo_hash.c
