@@ -62,8 +62,7 @@ void togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
 
 void togo_m_queue_init(void)
 {
-	togo_m_queue_pool = togo_pool_create(
-			togo_pool_size(TOGO_M_QUEUE_POOL_SIZE));
+	togo_m_queue_pool = togo_pool_create(TOGO_M_QUEUE_POOL_SIZE);
 	if (togo_m_queue_pool == NULL) {
 		togo_log(ERROR, "Initialize modules_queue's pool fail.");
 		togo_exit();

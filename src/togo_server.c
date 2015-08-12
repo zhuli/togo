@@ -186,8 +186,7 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 	 * Through this socket_item , We store each connection details.
 	 * When this connection is disconnect, The socket_item will be freed.
 	 */
-	TOGO_POOL * worker_pool = togo_pool_create(
-			togo_pool_size(TOGO_WORKER_POOL_SIZE));
+	TOGO_POOL * worker_pool = togo_pool_create(TOGO_WORKER_POOL_SIZE);
 	TOGO_THREAD_ITEM * socket_item = togo_pool_calloc(worker_pool,
 			sizeof(TOGO_THREAD_ITEM));
 	rbuf = togo_pool_alloc(worker_pool, sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE);

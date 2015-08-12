@@ -26,7 +26,7 @@ void togo_pool_test()
 	void * p1;
 
 	//togo_pool_create
-	TOGO_POOL * pool = togo_pool_create(togo_pool_size(10 * 1024));
+	TOGO_POOL * pool = togo_pool_create(10 * 1024);
 	if (pool->total_size == 10288 && pool->max == 10 * 1024) {
 		togo_log(DEBUG,
 				"Testing function:togo_pool_create .............................OK");

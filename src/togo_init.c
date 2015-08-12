@@ -138,7 +138,7 @@ static void togo_daemon_init()
 
 static void togo_pool_init()
 {
-	togo_pool = togo_pool_create(togo_pool_size(TOGO_POOL_SIZE));
+	togo_pool = togo_pool_create(TOGO_POOL_SIZE);
 	togo_m_queue_init();
 }
 

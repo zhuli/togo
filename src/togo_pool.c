@@ -23,6 +23,7 @@ TOGO_POOL * togo_pool_create(size_t size)
 	TOGO_POOL_BLOCK * block;
 
 	/* The min size of pool is TOGO_DEFAULT_POOL_MIN_SIZE */
+	size = togo_pool_size(size);
 	if (TOGO_DEFAULT_POOL_MIN_SIZE > size) {
 		size = TOGO_DEFAULT_POOL_SIZE;
 	}
