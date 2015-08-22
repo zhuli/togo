@@ -11,14 +11,19 @@
 void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 		TOGO_THREAD_ITEM *socket_item)
 {
+	BOOL ret = FALSE;
 
 	if (command_tag[0].value == NULL) {
-		return;
+		ret = FALSE;
+	}
+	/* module Q */
+	if (strcmp(command_tag[0].value, "Q") == 0) {
 
-		/* module Q */
-	} else if (strcmp(command_tag[0].value, "Q") == 0) {
-
-		togo_m_queue_command(command_tag, socket_item);
+		ret = togo_m_queue_command(command_tag, socket_item);
 	}
 
+	/* If fail, We will return "FAIL"! */
+	if (ret == FALSE) {
+		togo_send_fail(socket_item);
+	}
 }

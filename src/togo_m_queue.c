@@ -15,13 +15,14 @@ static TOGO_M_QUEUE_BLOCK * togo_m_queue_block_get();
 static void togo_m_queue_block_free(TOGO_M_QUEUE_BLOCK * block,
 		TOGO_POOL * pool, TOGO_M_QUEUE * queue);
 
-void togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
+BOOL togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
 		TOGO_THREAD_ITEM *socket_item)
 {
 	u_char * action;
 	u_char * qname;
 	u_char * value;
 	size_t len;
+	BOOL ret = FALSE;
 
 	if (command_tag[1].value) {
 		action = command_tag[1].value;
@@ -34,30 +35,32 @@ void togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
 		len = command_tag[3].length;
 	}
 	if (action == NULL || qname == NULL) {
-		return;
+		return ret;
 	}
 
 	if (strcmp(action, "RPUSH") == 0) {
 		if (value == NULL) {
-			return;
+			return ret;
 		}
-		togo_m_queue_rpush(qname, value, len);
+		ret = togo_m_queue_rpush(qname, value, len);
 
 	} else if (strcmp(command_tag[1].value, "LPUSH") == 0) {
 		if (value == NULL) {
-			return;
+			return ret;
 		}
-		togo_m_queue_lpush(qname, value, len);
+		ret = togo_m_queue_lpush(qname, value, len);
 
 	} else if (strcmp(command_tag[1].value, "LPOP") == 0) {
-		togo_m_queue_lpop(qname, socket_item);
+		ret = togo_m_queue_lpop(qname, socket_item);
 
 	} else if (strcmp(command_tag[1].value, "RPOP") == 0) {
-		togo_m_queue_rpop(qname, socket_item);
+		ret = togo_m_queue_rpop(qname, socket_item);
 
 	} else if (strcmp(command_tag[1].value, "COUNT") == 0) {
-		togo_m_queue_count(qname, socket_item);
+		ret = togo_m_queue_count(qname, socket_item);
 	}
+
+	return ret;
 }
 
 void togo_m_queue_init(void)
@@ -243,7 +246,7 @@ BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len)
 	return TRUE;
 }
 
-void togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
+BOOL togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 {
 	TOGO_HASHTABLE_ITEM * hash_item;
 	TOGO_M_QUEUE_ITEM * item;
@@ -252,7 +255,7 @@ void togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 
 	queue = togo_m_queue_get(name);
 	if (queue == NULL) {
-		return;
+		return FALSE;
 	}
 
 	pthread_mutex_lock(&queue->qlock);
@@ -260,7 +263,7 @@ void togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	if (queue->tail == NULL) {
 		queue->head = NULL;
 		pthread_mutex_unlock(&queue->qlock);
-		return;
+		return FALSE;
 	}
 
 	item = queue->tail;
@@ -285,10 +288,10 @@ void togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	}
 
 	pthread_mutex_unlock(&queue->qlock);
-
+	return TRUE;
 }
 
-void togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
+BOOL togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 {
 	TOGO_HASHTABLE_ITEM * hash_item;
 	TOGO_M_QUEUE_ITEM * item;
@@ -297,7 +300,7 @@ void togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 
 	queue = togo_m_queue_get(name);
 	if (queue == NULL) {
-		return;
+		return FALSE;
 	}
 
 	pthread_mutex_lock(&queue->qlock);
@@ -305,7 +308,7 @@ void togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	if (queue->head == NULL) {
 		queue->tail = NULL;
 		pthread_mutex_unlock(&queue->qlock);
-		return;
+		return FALSE;
 	}
 	item = queue->head;
 	if (item->next != NULL) {
@@ -329,10 +332,10 @@ void togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	}
 
 	pthread_mutex_unlock(&queue->qlock);
-
+	return TRUE;
 }
 
-void togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
+BOOL togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
 {
 	uint32_t count;
 	TOGO_M_QUEUE * queue;
@@ -348,7 +351,7 @@ void togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	togo_send_data(socket_item, str, strlen(str));
 
 	togo_pool_free_data(queue->pool, str);
-
+	return TRUE;
 }
 
 static TOGO_M_QUEUE * togo_m_queue_create(u_char * name)

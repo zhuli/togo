@@ -18,8 +18,8 @@
 typedef struct togo_thread_item TOGO_THREAD_ITEM;
 typedef struct togo_thread_queue TOGO_THREAD_QUEUE;
 typedef struct togo_worker_threads TOGO_WORKER_THREAD;
-typedef void (* BDATA_CALLBACK) (TOGO_THREAD_ITEM * socket_item);
-typedef int (* SEND_CALLBACK) (TOGO_THREAD_ITEM * socket_item);
+typedef void (*BDATA_CALLBACK)(TOGO_THREAD_ITEM * socket_item);
+typedef int (*SEND_CALLBACK)(TOGO_THREAD_ITEM * socket_item);
 
 struct togo_thread_item {
 	int sfd; /* socket ID */
@@ -30,7 +30,7 @@ struct togo_thread_item {
 	u_char * rcurr; /* Record the usage of read_buf */
 	int rbytes;
 
-	int sstatus; /* If need to send data ! */
+	int sstatus; /* Send data status! */
 	u_char * sbuf; /* The buffer to send data */
 	int sbuf_size; /* The buffer size */
 	int ssize; /* The length of the send data */

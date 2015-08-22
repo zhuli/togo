@@ -110,8 +110,13 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 	/* Send data */
 	if (socket_item->sstatus != 1) {
 		if (socket_item->sbuf == NULL || socket_item->ssize == 0) {
-			togo_command_build_send(socket_item, TOGO_SBUF_OK,
-					strlen(TOGO_SBUF_OK));
+			if (socket_item->sstatus == 2) {
+				togo_command_build_send(socket_item, TOGO_SBUF_FAIL,
+						strlen(TOGO_SBUF_FAIL));
+			} else {
+				togo_command_build_send(socket_item, TOGO_SBUF_OK,
+						strlen(TOGO_SBUF_OK));
+			}
 		}
 		togo_wt_send_cb(socket_item);
 	}
@@ -160,8 +165,13 @@ void togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 	/* Send data */
 	if (socket_item->sstatus != 1) {
 		if (socket_item->sbuf == NULL || socket_item->ssize == 0) {
-			togo_command_build_send(socket_item, TOGO_SBUF_OK,
-					strlen(TOGO_SBUF_OK));
+			if (socket_item->sstatus == 2) {
+				togo_command_build_send(socket_item, TOGO_SBUF_FAIL,
+						strlen(TOGO_SBUF_FAIL));
+			} else {
+				togo_command_build_send(socket_item, TOGO_SBUF_OK,
+						strlen(TOGO_SBUF_OK));
+			}
 		}
 		togo_wt_send_cb(socket_item);
 	}
@@ -173,6 +183,8 @@ void togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 void togo_command_build_read(TOGO_THREAD_ITEM * socket_item, TOGO_POOL * bpool,
 		u_char * buf, size_t len, BDATA_CALLBACK callback)
 {
+	socket_item->sstatus = 1;
+
 	socket_item->bbuf = buf;
 	socket_item->bcb = callback;
 	socket_item->bcurr = buf;
@@ -220,9 +232,11 @@ void togo_command_build_send(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 
 }
 
-void togo_command_build_not_send(TOGO_THREAD_ITEM * socket_item)
+void togo_command_build_send_fail(TOGO_THREAD_ITEM * socket_item)
 {
-	socket_item->sstatus = 1;
+	if (socket_item->sstatus == 0) {
+		socket_item->sstatus = 2;
+	}
 }
 
 static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
