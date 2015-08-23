@@ -127,20 +127,20 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 	return TRUE;
 }
 
-void togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
+BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 		SEND_CALLBACK togo_wt_send_cb)
 {
 	size_t space;
 	BDATA_CALLBACK callback;
 
 	if (socket_item->bbuf == NULL) {
-		return;
+		return FALSE;
 	}
 
 	callback = socket_item->bcb;
 	space = abs((socket_item->bbuf + socket_item->bsize) - socket_item->bcurr);
 	if (space == 0)
-		return;
+		return FALSE;
 
 	if (socket_item->rbytes >= space) {
 
@@ -179,7 +179,7 @@ void togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 	}
 	socket_item->sstatus = 0;
 
-	return;
+	return TRUE;
 }
 
 void togo_command_build_read(TOGO_THREAD_ITEM * socket_item, TOGO_POOL * bpool,

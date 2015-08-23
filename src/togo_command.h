@@ -57,7 +57,7 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
  * from socket_item->rbuf. The socket_item->bstatus will be set 0
  * Only read enough data.
  */
-void togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
+BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 		SEND_CALLBACK togo_wt_send_cb);
 void togo_command_build_read(TOGO_THREAD_ITEM * socket_item, TOGO_POOL * bpool,
 		u_char * buf, size_t len, BDATA_CALLBACK callback);

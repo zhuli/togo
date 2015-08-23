@@ -330,7 +330,11 @@ static void togo_wt_read_cb(struct bufferevent *bev, void *arg)
 			}
 
 			if (socket_item->bstatus == 1) {
-				togo_command_read_big_data(socket_item, togo_wt_send_cb);
+				BOOL ret = togo_command_read_big_data(socket_item,
+						togo_wt_send_cb);
+				if (ret == FALSE) {
+					break;
+				}
 				continue;
 			}
 
