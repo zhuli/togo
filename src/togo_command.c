@@ -162,6 +162,8 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 		socket_item->rbytes = 0;
 		socket_item->rcurr = socket_item->rcurr + socket_item->rbytes;
 		socket_item->bcurr = socket_item->bcurr + socket_item->rbytes;
+
+		return TRUE;
 	}
 
 	/* Send data */
