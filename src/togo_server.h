@@ -30,12 +30,12 @@ struct togo_thread_item {
 	u_char * rcurr; /* Record the usage of read_buf */
 	int rbytes;
 
-	int sstatus; /* Send data status! */
+	int sstatus; /* Send data status! 0-nomal; 1-not need send data; 2-send fail*/
 	u_char * sbuf; /* The buffer to send data */
 	int sbuf_size; /* The buffer size */
 	int ssize; /* The length of the send data */
 
-	int bstatus; /* The status of when to read the big data! */
+	int bstatus; /* The status of when to read the big data! 0-nomal;1-read big data*/
 	void * bbuf; /* The buffer to read the big data !*/
 	size_t bsize; /* The size of the bbuf */
 	void * bcurr; /* Record the usage of bbuf */
