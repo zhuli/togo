@@ -271,7 +271,7 @@ BOOL togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	if (queue->tail == NULL) {
 		queue->head = NULL;
 		pthread_mutex_unlock(&queue->qlock);
-		togo_send_null(socket_item);
+		togo_send_null(socket_item); /* Send "TOGO_NULL"*/
 		return TRUE;
 	}
 
@@ -320,7 +320,7 @@ BOOL togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	if (queue->head == NULL) {
 		queue->tail = NULL;
 		pthread_mutex_unlock(&queue->qlock);
-		togo_send_null(socket_item);
+		togo_send_null(socket_item); /* Send "TOGO_NULL"*/
 		return TRUE;
 	}
 	item = queue->head;
