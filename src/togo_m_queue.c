@@ -113,6 +113,7 @@ BOOL togo_m_queue_rpush(u_char * name, u_char * val, size_t len)
 
 		queue->block = block;
 		queue->total_block++;
+		queue->total_size += togo_m_queue_block_size();
 
 	} else {
 		block = queue->block;
@@ -134,6 +135,7 @@ BOOL togo_m_queue_rpush(u_char * name, u_char * val, size_t len)
 
 			queue->block = block;
 			queue->total_block++;
+			queue->total_size += togo_m_queue_block_size();
 
 		}
 	}
@@ -157,6 +159,8 @@ BOOL togo_m_queue_rpush(u_char * name, u_char * val, size_t len)
 	}
 	block->nelt++;
 	queue->total_elt++;
+	queue->total_hit++;
+	queue->total_write++;
 
 	togo_memcpy(item->val, val, len);
 	block->curr = block->curr + len;
@@ -193,6 +197,7 @@ BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len)
 
 		queue->block = block;
 		queue->total_block++;
+		queue->total_size += togo_m_queue_block_size();
 
 	} else {
 		block = queue->block;
@@ -214,6 +219,7 @@ BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len)
 
 			queue->block = block;
 			queue->total_block++;
+			queue->total_size += togo_m_queue_block_size();
 
 		}
 	}
@@ -237,6 +243,8 @@ BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len)
 	}
 	block->nelt++;
 	queue->total_elt++;
+	queue->total_hit++;
+	queue->total_write++;
 
 	togo_memcpy(item->val, val, len);
 	block->curr = block->curr + len;
@@ -273,6 +281,8 @@ BOOL togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	}
 	queue->tail = item->prev;
 	queue->total_elt--;
+	queue->total_hit++;
+	queue->total_read++;
 	block = item->block;
 	block->nelt--;
 
@@ -286,6 +296,7 @@ BOOL togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	if (block->nelt == 0) {
 		togo_m_queue_block_free(block, queue->pool, queue);
 		queue->total_block--;
+		queue->total_size -= togo_m_queue_block_size();
 	}
 
 	pthread_mutex_unlock(&queue->qlock);
@@ -318,6 +329,8 @@ BOOL togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	}
 	queue->head = item->next;
 	queue->total_elt--;
+	queue->total_hit++;
+	queue->total_read++;
 	block = item->block;
 	block->nelt--;
 
@@ -331,6 +344,7 @@ BOOL togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	if (block->nelt == 0) {
 		togo_m_queue_block_free(block, queue->pool, queue);
 		queue->total_block--;
+		queue->total_size -= togo_m_queue_block_size();
 	}
 
 	pthread_mutex_unlock(&queue->qlock);
@@ -351,7 +365,6 @@ BOOL togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	togo_itoa(count, str, 10);
 
 	togo_send_data(socket_item, str, strlen(str));
-
 	togo_pool_free_data(queue->pool, str);
 	return TRUE;
 }
@@ -381,6 +394,10 @@ static TOGO_M_QUEUE * togo_m_queue_create(u_char * name)
 	queue->block = block;
 	queue->total_block = 1;
 	queue->total_elt = 0;
+	queue->total_size = togo_m_queue_block_size();
+	queue->total_hit = 0;
+	queue->total_read = 0;
+	queue->total_write = 0;
 	queue->tail = NULL;
 	queue->head = NULL;
 	queue->pool = togo_m_queue_pool;

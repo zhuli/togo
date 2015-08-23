@@ -17,11 +17,17 @@ typedef struct togo_m_queue TOGO_M_QUEUE;
 typedef struct togo_m_queue_block TOGO_M_QUEUE_BLOCK;
 typedef struct togo_m_queue_fblock TOGO_M_QUEUE_FBLOCK;
 typedef struct togo_m_queue_item TOGO_M_QUEUE_ITEM;
+#define togo_m_queue_block_size() \
+	(TOGO_M_QUEUE_BLOCK_SIZE + sizeof(TOGO_M_QUEUE_BLOCK))
 
 struct togo_m_queue {
 	u_char * name;
 	uint32_t total_elt;
 	uint32_t total_block;
+	uint32_t total_hit;
+	uint32_t total_write;
+	uint32_t total_read;
+	uint32_t total_size;
 	TOGO_M_QUEUE_BLOCK * block;
 	TOGO_M_QUEUE_ITEM * head;
 	TOGO_M_QUEUE_ITEM * tail;
