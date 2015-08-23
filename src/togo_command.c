@@ -98,6 +98,8 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 		togo_command_build_send(socket_item, TOGO_SBUF_COMMAND_TOO_BIG,
 				strlen(TOGO_SBUF_COMMAND_TOO_BIG));
 		togo_wt_send_cb(socket_item);
+		socket_item->sstatus = 0;
+		socket_item->rbytes = 0;
 		return TRUE;
 	}
 
@@ -237,6 +239,13 @@ void togo_command_build_send_fail(TOGO_THREAD_ITEM * socket_item)
 	if (socket_item->sstatus == 0) {
 		socket_item->sstatus = 2;
 	}
+}
+
+void togo_command_build_send_null(TOGO_THREAD_ITEM * socket_item)
+{
+	togo_command_build_send(socket_item, TOGO_SBUF_NULL,
+			strlen(TOGO_SBUF_NULL));
+	socket_item->sstatus = 0;
 }
 
 static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
