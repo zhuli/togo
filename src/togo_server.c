@@ -333,6 +333,7 @@ static void togo_wt_read_cb(struct bufferevent *bev, void *arg)
 				BOOL ret = togo_command_read_big_data(socket_item,
 						togo_wt_send_cb);
 				if (ret == FALSE) {
+					togo_wt_destroy_socket(bev, socket_item);
 					break;
 				}
 				continue;
