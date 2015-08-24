@@ -10,9 +10,9 @@
 
 #include "togo_util.h"
 #include "togo_alloc.h"
-#include "togo_string.h"
 #include "togo_hash.h"
 #include "togo_pool.h"
+#include "togo_string.h"
 #include "togo_hashtable.h"
 #include "togo_array.h"
 #include "togo_config.h"

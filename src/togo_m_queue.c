@@ -38,26 +38,29 @@ BOOL togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
 		return ret;
 	}
 
-	if (strcmp(action, "RPUSH") == 0) {
+	if (togo_strcmp(action, "RPUSH") == 0) {
 		if (value == NULL) {
 			return ret;
 		}
 		ret = togo_m_queue_rpush(qname, value, len);
 
-	} else if (strcmp(command_tag[1].value, "LPUSH") == 0) {
+	} else if (togo_strcmp(command_tag[1].value, "LPUSH") == 0) {
 		if (value == NULL) {
 			return ret;
 		}
 		ret = togo_m_queue_lpush(qname, value, len);
 
-	} else if (strcmp(command_tag[1].value, "LPOP") == 0) {
+	} else if (togo_strcmp(command_tag[1].value, "LPOP") == 0) {
 		ret = togo_m_queue_lpop(qname, socket_item);
 
-	} else if (strcmp(command_tag[1].value, "RPOP") == 0) {
+	} else if (togo_strcmp(command_tag[1].value, "RPOP") == 0) {
 		ret = togo_m_queue_rpop(qname, socket_item);
 
-	} else if (strcmp(command_tag[1].value, "COUNT") == 0) {
+	} else if (togo_strcmp(command_tag[1].value, "COUNT") == 0) {
 		ret = togo_m_queue_count(qname, socket_item);
+
+	} else if (togo_strcmp(command_tag[1].value, "STATUS") == 0) {
+		ret = togo_m_queue_status(qname, socket_item);
 	}
 
 	return ret;
@@ -360,12 +363,58 @@ BOOL togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	queue = togo_m_queue_get(name);
 	count = (queue == NULL) ? 0 : queue->total_elt;
 
-	str_size = 20;
-	u_char * str = togo_pool_calloc(queue->pool, str_size);
+	u_char * str = togo_pool_alloc(queue->pool, 12);
 	togo_itoa(count, str, 10);
 
 	togo_send_data(socket_item, str, strlen(str));
 	togo_pool_free_data(queue->pool, str);
+	return TRUE;
+}
+
+BOOL togo_m_queue_status(u_char * name, TOGO_THREAD_ITEM * socket_item)
+{
+	TOGO_M_QUEUE * queue;
+	TOGO_STRING * togo_str;
+	char int_str[12];
+
+	queue = togo_m_queue_get(name);
+	if (queue == NULL) {
+		return FALSE;
+	}
+
+	togo_str = togo_string_init(queue->pool, 30);
+	if (togo_str == NULL) {
+		return FALSE;
+	}
+
+	togo_string_append(&togo_str, "total_elt:", 10);
+	togo_itoa(queue->total_elt, int_str, 10);
+	togo_string_append(&togo_str, int_str, strlen(int_str));
+
+	togo_string_append(&togo_str, ";total_block:", 13);
+	togo_itoa(queue->total_block, int_str, 10);
+	togo_string_append(&togo_str, int_str, strlen(int_str));
+
+	togo_string_append(&togo_str, ";total_hit:", 11);
+	togo_itoa(queue->total_hit, int_str, 10);
+	togo_string_append(&togo_str, int_str, strlen(int_str));
+
+	togo_string_append(&togo_str, ";total_write:", 13);
+	togo_itoa(queue->total_write, int_str, 10);
+	togo_string_append(&togo_str, int_str, strlen(int_str));
+
+	togo_string_append(&togo_str, ";total_read:", 12);
+	togo_itoa(queue->total_read, int_str, 10);
+	togo_string_append(&togo_str, int_str, strlen(int_str));
+
+	togo_string_append(&togo_str, ";total_size:", 12);
+	togo_itoa(queue->total_size, int_str, 10);
+	togo_string_append(&togo_str, int_str, strlen(int_str));
+
+	togo_send_data(socket_item, togo_str->buf, togo_str->str_size);
+
+	togo_string_destroy(togo_str);
+
 	return TRUE;
 }
 

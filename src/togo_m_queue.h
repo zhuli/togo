@@ -64,6 +64,7 @@ BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len);
 BOOL togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item);
 BOOL togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item);
 BOOL togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item);
+BOOL togo_m_queue_status(u_char * name, TOGO_THREAD_ITEM * socket_item);
 
 TOGO_POOL * togo_m_queue_pool;
 TOGO_HASHTABLE * togo_m_queue_hashtable;

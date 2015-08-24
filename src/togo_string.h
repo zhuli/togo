@@ -8,6 +8,8 @@
 #ifndef TOGO_STRING_H_
 #define TOGO_STRING_H_
 
+#define TOGO_STRING_DEFAULT_SIZE 256
+
 #define togo_tolower(c)  (u_char) ((c >= 'A' && c <= 'Z') ? (c | 0x20) : c)
 #define togo_toupper(c)  (u_char) ((c >= 'a' && c <= 'z') ? (c & ~0x20) : c)
 #define togo_strcmp(s1, s2)  strcmp((const char *) s1, (const char *) s2)
@@ -17,6 +19,19 @@
 #define togo_strlen(s)       strlen((const char *) s)
 #define togo_strcpy strcpy
 #define togo_strcat strcat
+
+typedef struct togo_string TOGO_STRING;
+
+struct togo_string {
+	size_t buf_size;
+	size_t str_size;
+	u_char * buf;
+	TOGO_POOL * pool;
+};
+
+TOGO_STRING * togo_string_init(TOGO_POOL * pool, size_t size);
+void togo_string_append(TOGO_STRING ** togo_str, u_char * str, size_t len);
+void togo_string_destroy(TOGO_STRING * togo_str);
 
 int togo_encode_base64(u_char *dst, u_char *src);
 int togo_decode_base64(u_char *dst, u_char *src);

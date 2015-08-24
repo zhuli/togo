@@ -8,6 +8,77 @@
 #include "togo.h"
 #include "togo_load.h"
 
+TOGO_STRING * togo_string_init(TOGO_POOL * pool, size_t size)
+{
+	TOGO_STRING * togo_str;
+	size_t all_size;
+	void * p;
+
+	all_size = sizeof(TOGO_STRING) + size;
+	p = togo_pool_alloc(pool, all_size);
+	if (p == NULL) {
+		return NULL;
+	}
+
+	togo_str = (TOGO_STRING *) p;
+	togo_str->buf = (u_char *) (p + sizeof(TOGO_STRING));
+	togo_str->buf_size = size;
+	togo_str->pool = pool;
+	togo_str->str_size = 0;
+
+	return togo_str;
+}
+
+void togo_string_append(TOGO_STRING ** togo_str, u_char * str, size_t len)
+{
+	size_t space;
+	u_char * curr;
+
+	if ((*togo_str) == NULL || str == NULL || len == 0) {
+		return;
+	}
+
+	space = (*togo_str)->buf_size - (*togo_str)->str_size;
+
+	/* There is no enough space, Alloc a new TOGO_STRING */
+	if (space < len) {
+
+		size_t old_size, new_size, str_size;
+		TOGO_POOL * pool;
+		TOGO_STRING * new_str;
+		void * p;
+
+		str_size = (*togo_str)->str_size;
+		pool = (*togo_str)->pool;
+		old_size = sizeof(TOGO_STRING) + (*togo_str)->buf_size;
+		new_size = old_size * 2;
+		p = togo_pool_realloc((*togo_str)->pool, (void *) (*togo_str), old_size,
+				new_size);
+		if (p == NULL) {
+			return;
+		}
+
+		new_str = (TOGO_STRING *) p;
+		new_str->buf = (u_char *) (p + sizeof(TOGO_STRING));
+		new_str->buf_size = new_size;
+		new_str->pool = pool;
+		new_str->str_size = str_size;
+
+		(*togo_str) = new_str;
+	}
+
+	curr = (u_char *) ((*togo_str)->buf + (*togo_str)->str_size);
+	togo_memcpy(curr, str, len);
+	(*togo_str)->str_size += len;
+
+	return;
+}
+
+void togo_string_destroy(TOGO_STRING * togo_str)
+{
+	togo_pool_free_data(togo_str->pool, (void *) togo_str);
+}
+
 int togo_encode_base64(u_char *dst, u_char *src)
 {
 	u_char *d, *s;
