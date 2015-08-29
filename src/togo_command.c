@@ -188,12 +188,12 @@ void togo_command_build_read(TOGO_THREAD_ITEM * socket_item, TOGO_POOL * bpool,
 		u_char * buf, size_t len, BDATA_CALLBACK callback)
 {
 	socket_item->sstatus = 1;
+	socket_item->rstatus = 1;
 
 	socket_item->bbuf = buf;
 	socket_item->bcb = callback;
 	socket_item->bcurr = buf;
 	socket_item->bsize = len;
-	socket_item->bstatus = 1;
 	socket_item->bpool = bpool;
 }
 
@@ -248,6 +248,16 @@ void togo_command_build_send_null(TOGO_THREAD_ITEM * socket_item)
 	togo_command_build_send(socket_item, TOGO_SBUF_NULL,
 			strlen(TOGO_SBUF_NULL));
 	socket_item->sstatus = 0;
+}
+
+void togo_command_build_send_big(TOGO_THREAD_ITEM * socket_item, u_char * buf,
+		size_t len, BDATA_CALLBACK callback)
+{
+	socket_item->sstatus = 3;
+
+	socket_item->bscb = callback;
+	socket_item->bssize = len;
+	socket_item->bsbuf = buf;
 }
 
 static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
@@ -310,10 +320,11 @@ static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
 
 static void togo_command_close_read_big_data(TOGO_THREAD_ITEM * socket_item)
 {
+	socket_item->rstatus = 0;
+
 	socket_item->bbuf = NULL;
 	socket_item->bcb = NULL;
 	socket_item->bcurr = NULL;
 	socket_item->bsize = 0;
-	socket_item->bstatus = 0;
 	socket_item->bpool = NULL;
 }

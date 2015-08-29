@@ -16,13 +16,13 @@
 #define TOGO_SBUF_FAIL "TOGO_FAIL"
 #define TOGO_SBUF_NULL "TOGO_NULL"
 #define TOGO_SBUF_COMMAND_TOO_BIG "TOGO_COMMAND_TOO_BIG"
-#define TOGO_SBUF_TOO_BIG "TOO_BIG\r\n"
+#define TOGO_SBUF_TOO_BIG "TOO_BIG"
 
 #define togo_send_data togo_command_build_send
 #define togo_send_fail togo_command_build_send_fail
 #define togo_send_null togo_command_build_send_null
+#define togo_send_big togo_command_build_send_big
 #define togo_read_data togo_command_build_read
-
 
 /**
  * command sign
@@ -65,5 +65,7 @@ void togo_command_build_send(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 		size_t len);
 void togo_command_build_send_fail(TOGO_THREAD_ITEM * socket_item);
 void togo_command_build_send_null(TOGO_THREAD_ITEM * socket_item);
+void togo_command_build_send_big(TOGO_THREAD_ITEM * socket_item, u_char * buf,
+		size_t len, BDATA_CALLBACK callback);
 
 #endif

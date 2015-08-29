@@ -25,22 +25,26 @@ struct togo_thread_item {
 	int sfd; /* socket ID */
 	struct bufferevent *bev;
 
+	int rstatus; /* The status of when to read the big data! 0-nomal;1-read big data*/
 	u_char * rbuf; /* The buffer stores client data*/
 	int rsize; /* The size of the rbuf */
 	u_char * rcurr; /* Record the usage of read_buf */
 	int rbytes;
 
-	int sstatus; /* Send data status! 0-nomal; 1-not need send data; 2-send fail*/
+	int sstatus; /* The status of how to send data ! 0-nomal; 1-not need send data; 2-send fail; 3-send big data;*/
 	u_char * sbuf; /* The buffer to send data */
 	int sbuf_size; /* The buffer size */
-	int ssize; /* The length of the send data */
+	int ssize; /* The size of the send data */
 
-	int bstatus; /* The status of when to read the big data! 0-nomal;1-read big data*/
 	void * bbuf; /* The buffer to read the big data !*/
 	size_t bsize; /* The size of the bbuf */
 	void * bcurr; /* Record the usage of bbuf */
 	TOGO_POOL * bpool; /* pool */
 	BDATA_CALLBACK bcb; /* The callback function when read the end of the big data*/
+
+	void * bsbuf; /* The buffer to send the big data! */
+	size_t bssize; /* The size of the big data buffer!*/
+	BDATA_CALLBACK bscb; /* The callback function when send the end of the big data*/
 
 	TOGO_THREAD_ITEM *next; /* a list of TOGO_THREAD_ITEM struct */
 	TOGO_POOL * worker_pool; /* Worker memory pool */

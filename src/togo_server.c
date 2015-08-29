@@ -329,7 +329,7 @@ static void togo_wt_read_cb(struct bufferevent *bev, void *arg)
 				break;
 			}
 
-			if (socket_item->bstatus == 1) {
+			if (socket_item->rstatus == 1) {
 				BOOL ret = togo_command_read_big_data(socket_item,
 						togo_wt_send_cb);
 				if (ret == FALSE) {
@@ -363,16 +363,46 @@ static void togo_wt_read_cb(struct bufferevent *bev, void *arg)
 
 int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
 {
-	if (socket_item->sfd < 1 || socket_item->sbuf == NULL
-			|| socket_item->ssize == 0) {
-		return 0;
+	int ret;
+
+	/* If sstatus equal to 3, send the big data! */
+	if (socket_item->sstatus == 3) {
+		BDATA_CALLBACK callback;
+		if (socket_item->bsbuf == NULL || socket_item->bssize == 0) {
+			return 0;
+		}
+
+		ret = bufferevent_write(socket_item->bev, TOGO_SBUF_START,
+						sizeof(TOGO_SBUF_START));
+		ret += bufferevent_write(socket_item->bev, socket_item->bsbuf,
+				socket_item->bssize);
+		ret += bufferevent_write(socket_item->bev, TOGO_SBUF_END,
+				sizeof(TOGO_SBUF_END));
+		if (ret < 0) {
+			togo_log(INFO, "Send data error");
+		}
+
+		callback = socket_item->bscb;
+		if (callback != NULL) {
+			callback(socket_item);
+		}
+		socket_item->sstatus = 0;
+
+	} else {
+
+		if (socket_item->sfd < 1 || socket_item->sbuf == NULL
+				|| socket_item->ssize == 0) {
+			return 0;
+		}
+
+		ret = bufferevent_write(socket_item->bev, socket_item->sbuf,
+				socket_item->ssize);
+		if (ret < 0) {
+			togo_log(INFO, "Send data error");
+		}
+		socket_item->ssize = 0;
 	}
-	int ret = bufferevent_write(socket_item->bev, socket_item->sbuf,
-			socket_item->ssize);
-	if (ret < 0) {
-		togo_log(INFO, "Send data error");
-	}
-	socket_item->ssize = 0;
+
 	return ret;
 }
 
