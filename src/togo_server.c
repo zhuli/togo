@@ -373,11 +373,11 @@ int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
 		}
 
 		ret = bufferevent_write(socket_item->bev, TOGO_SBUF_START,
-						sizeof(TOGO_SBUF_START));
+				togo_strlen(TOGO_SBUF_START));
 		ret += bufferevent_write(socket_item->bev, socket_item->bsbuf,
 				socket_item->bssize);
 		ret += bufferevent_write(socket_item->bev, TOGO_SBUF_END,
-				sizeof(TOGO_SBUF_END));
+				togo_strlen(TOGO_SBUF_END));
 		if (ret < 0) {
 			togo_log(INFO, "Send data error");
 		}

@@ -21,6 +21,7 @@
 #define togo_strcat strcat
 
 typedef struct togo_string TOGO_STRING;
+#define togo_string_get(buf)  (buf - sizeof(TOGO_STRING))
 
 struct togo_string {
 	size_t buf_size;
@@ -32,7 +33,7 @@ struct togo_string {
 TOGO_STRING * togo_string_init(TOGO_POOL * pool, size_t size);
 void togo_string_append(TOGO_STRING ** togo_str, u_char * str, size_t len);
 void togo_string_destroy(TOGO_STRING * togo_str);
-#define togo_string_get(buf)  (buf - sizeof(TOGO_STRING))
+
 
 int togo_encode_base64(u_char *dst, u_char *src);
 int togo_decode_base64(u_char *dst, u_char *src);

@@ -96,7 +96,7 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 	/* Command is too large! */
 	if (ntag == -1) {
 		togo_command_build_send(socket_item, TOGO_SBUF_COMMAND_TOO_BIG,
-				strlen(TOGO_SBUF_COMMAND_TOO_BIG));
+				togo_strlen(TOGO_SBUF_COMMAND_TOO_BIG));
 		togo_wt_send_cb(socket_item);
 		socket_item->sstatus = 0;
 		socket_item->rbytes = 0;
@@ -114,10 +114,10 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 		if (socket_item->sbuf == NULL || socket_item->ssize == 0) {
 			if (socket_item->sstatus == 2) {
 				togo_command_build_send(socket_item, TOGO_SBUF_FAIL,
-						strlen(TOGO_SBUF_FAIL));
+						togo_strlen(TOGO_SBUF_FAIL));
 			} else {
 				togo_command_build_send(socket_item, TOGO_SBUF_OK,
-						strlen(TOGO_SBUF_OK));
+						togo_strlen(TOGO_SBUF_OK));
 			}
 		}
 		togo_wt_send_cb(socket_item);
@@ -171,10 +171,10 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 		if (socket_item->sbuf == NULL || socket_item->ssize == 0) {
 			if (socket_item->sstatus == 2) {
 				togo_command_build_send(socket_item, TOGO_SBUF_FAIL,
-						strlen(TOGO_SBUF_FAIL));
+						togo_strlen(TOGO_SBUF_FAIL));
 			} else {
 				togo_command_build_send(socket_item, TOGO_SBUF_OK,
-						strlen(TOGO_SBUF_OK));
+						togo_strlen(TOGO_SBUF_OK));
 			}
 		}
 		togo_wt_send_cb(socket_item);
@@ -224,8 +224,8 @@ void togo_command_build_send(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 	}
 
 	if (len > 0 && buf != NULL) {
-		size_t start = strlen(TOGO_SBUF_START);
-		size_t end = strlen(TOGO_SBUF_END);
+		size_t start = togo_strlen(TOGO_SBUF_START);
+		size_t end = togo_strlen(TOGO_SBUF_END);
 		size_t total = start + len + end;
 		togo_memcpy(socket_item->sbuf, TOGO_SBUF_START, start);
 		togo_memcpy(socket_item->sbuf + start, buf, len);
@@ -246,7 +246,7 @@ void togo_command_build_send_fail(TOGO_THREAD_ITEM * socket_item)
 void togo_command_build_send_null(TOGO_THREAD_ITEM * socket_item)
 {
 	togo_command_build_send(socket_item, TOGO_SBUF_NULL,
-			strlen(TOGO_SBUF_NULL));
+			togo_strlen(TOGO_SBUF_NULL));
 	socket_item->sstatus = 0;
 }
 
@@ -262,7 +262,7 @@ void togo_command_build_send_big(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 
 static int togo_command_split(u_char *command, TOGO_COMMAND_TAG *command_tag)
 {
-	size_t len = strlen(command);
+	size_t len = togo_strlen(command);
 	u_char * p;
 	u_char * t;
 	p = t = command;
