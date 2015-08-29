@@ -13,7 +13,7 @@ static void * togo_pool_build_data(TOGO_POOL * pool, size_t size, u_char * p,
 static void * togo_pool_alloc_block(TOGO_POOL * pool, size_t size);
 static void * togo_pool_alloc_large(TOGO_POOL * pool, size_t size);
 
-int search = 5;
+int search = 10;
 int tries = 4;
 
 TOGO_POOL * togo_pool_create(size_t size)
@@ -172,7 +172,6 @@ void * togo_pool_alloc(TOGO_POOL * pool, size_t size)
 
 				block->used = p + dsize;
 				p = togo_pool_build_data(pool, size, p, block);
-
 				pthread_mutex_unlock(&pool->mlock);
 				return p;
 			}
@@ -180,6 +179,7 @@ void * togo_pool_alloc(TOGO_POOL * pool, size_t size)
 			block = block->next;
 
 		} while (block);
+
 
 		/* Create a new block */
 		p = togo_pool_alloc_block(pool, size);

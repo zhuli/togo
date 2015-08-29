@@ -381,8 +381,9 @@ BOOL togo_m_queue_status(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	if (queue == NULL) {
 		return FALSE;
 	}
+	pthread_mutex_lock(&queue->qlock);
 
-	togo_str = togo_string_init(queue->pool, 30);
+	togo_str = togo_string_init(queue->pool, TOGO_STRING_DEFAULT_SIZE);
 	if (togo_str == NULL) {
 		return FALSE;
 	}
@@ -414,6 +415,8 @@ BOOL togo_m_queue_status(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	togo_send_data(socket_item, togo_str->buf, togo_str->str_size);
 
 	togo_string_destroy(togo_str);
+
+	pthread_mutex_unlock(&queue->qlock);
 
 	return TRUE;
 }
