@@ -168,7 +168,7 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 	int client_socketfd = accept(fd, (struct sockaddr *) &client_addr,
 			&in_size);
 	if (client_socketfd < 0) {
-		togo_log(INFO, "Accept error.");
+		togo_log(ERROR, "Accept error.");
 		return;
 	}
 
@@ -191,6 +191,10 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 			sizeof(TOGO_THREAD_ITEM));
 	rbuf = togo_pool_alloc(worker_pool, sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE);
 	sbuf = togo_pool_alloc(worker_pool, TOGO_S_SBUF_INIT_SIZE);
+	if (rbuf == NULL || sbuf == NULL) {
+		togo_log(ERROR, "togo_pool_alloc a rbuf or sbuf error.");
+		return;
+	}
 
 	socket_item->sfd = client_socketfd;
 	socket_item->rbuf = rbuf;
@@ -214,7 +218,6 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 
 static void togo_wt_init()
 {
-	TOGO_WORKER_THREAD * temp;
 	int i, j;
 	int worker_thread_num = togo_c.worker_thread_num;
 

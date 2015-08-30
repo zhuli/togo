@@ -14,41 +14,61 @@ static void togo_m_queue_block_create();
 static TOGO_M_QUEUE_BLOCK * togo_m_queue_block_get();
 static void togo_m_queue_block_free(TOGO_M_QUEUE_BLOCK * block,
 		TOGO_POOL * pool, TOGO_M_QUEUE * queue);
+static void togo_m_queue_pi_put(size_t priority, TOGO_M_QUEUE * queue,
+		TOGO_M_QUEUE_ITEM * item);
+static TOGO_M_QUEUE_ITEM * togo_m_queue_pi_get(TOGO_M_QUEUE * queue);
 
 BOOL togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
-		TOGO_THREAD_ITEM *socket_item)
+		TOGO_THREAD_ITEM *socket_item, int ntag)
 {
-	u_char * action;
-	u_char * qname;
-	u_char * value;
-	size_t len;
+	u_char * action = NULL;
+	u_char * qname = NULL;
+	u_char * value = NULL;
+	size_t len = 0;
 	BOOL ret = FALSE;
+	uint32_t priority = 0;
 
-	if (command_tag[1].value) {
-		action = command_tag[1].value;
-	}
-	if (command_tag[2].value) {
-		qname = command_tag[2].value;
-	}
-	if (command_tag[3].value) {
+	/**
+	 * command_tag[0] : Module  Q
+	 * command_tag[1] : Action  RPUSH|LPUSH|LPOP|RPOP|COUNT|STATUS
+	 * command_tag[2] : Object  Queue name
+	 * command_tag[3] : Value   value
+	 * command_tag[4] : Option  priority:1|2|3
+	 */
+	action = command_tag[1].value;
+	qname = command_tag[2].value;
+
+	if (ntag > 3) {
 		value = command_tag[3].value;
 		len = command_tag[3].length;
 	}
+	if (ntag > 4) {
+		if (command_tag[4].length > 0) {
+			priority = togo_atoi(command_tag[4].value, 1);
+			if (priority < 1) {
+				priority = 0;
+			}
+			if (priority > 3) {
+				priority = 3;
+			}
+		}
+	}
+
 	if (action == NULL || qname == NULL) {
 		return ret;
 	}
 
 	if (togo_strcmp(action, "RPUSH") == 0) {
-		if (value == NULL) {
+		if (value == NULL || len == 0) {
 			return ret;
 		}
-		ret = togo_m_queue_rpush(qname, value, len);
+		ret = togo_m_queue_rpush(qname, value, len, priority);
 
 	} else if (togo_strcmp(command_tag[1].value, "LPUSH") == 0) {
-		if (value == NULL) {
+		if (value == NULL || len == 0) {
 			return ret;
 		}
-		ret = togo_m_queue_lpush(qname, value, len);
+		ret = togo_m_queue_lpush(qname, value, len, priority);
 
 	} else if (togo_strcmp(command_tag[1].value, "LPOP") == 0) {
 		ret = togo_m_queue_lpop(qname, socket_item);
@@ -90,7 +110,8 @@ void togo_m_queue_init(void)
 
 }
 
-BOOL togo_m_queue_rpush(u_char * name, u_char * val, size_t len)
+BOOL togo_m_queue_rpush(u_char * name, u_char * val, size_t len,
+		uint32_t priority)
 {
 	TOGO_M_QUEUE_ITEM * item;
 	TOGO_M_QUEUE_BLOCK * block;
@@ -153,13 +174,22 @@ BOOL togo_m_queue_rpush(u_char * name, u_char * val, size_t len)
 	item->next = NULL;
 	item->prev = queue->tail;
 
-	if (queue->tail != NULL) {
-		queue->tail->next = item;
+	/* Put the item into priority queue, If set the priority */
+	if (priority > 0) {
+		item->next = NULL;
+		item->prev = NULL;
+		togo_m_queue_pi_put(priority, queue, item);
+
+	} else {
+		if (queue->tail != NULL) {
+			queue->tail->next = item;
+		}
+		queue->tail = item;
+		if (queue->head == NULL) {
+			queue->head = item;
+		}
 	}
-	queue->tail = item;
-	if (queue->head == NULL) {
-		queue->head = item;
-	}
+
 	block->nelt++;
 	queue->total_elt++;
 	queue->total_hit++;
@@ -173,7 +203,8 @@ BOOL togo_m_queue_rpush(u_char * name, u_char * val, size_t len)
 	return TRUE;
 }
 
-BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len)
+BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len,
+		uint32_t priority)
 {
 	TOGO_M_QUEUE_ITEM * item;
 	TOGO_M_QUEUE_BLOCK * block;
@@ -237,13 +268,22 @@ BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len)
 	item->val = block->curr;
 	item->size = len;
 
-	if (queue->head) {
-		queue->head->prev = item;
+	/* Put the item into priority queue, If set the priority */
+	if (priority > 0) {
+		item->next = NULL;
+		item->prev = NULL;
+		togo_m_queue_pi_put(priority, queue, item);
+
+	} else {
+		if (queue->head) {
+			queue->head->prev = item;
+		}
+		queue->head = item;
+		if (queue->tail == NULL) {
+			queue->tail = item;
+		}
 	}
-	queue->head = item;
-	if (queue->tail == NULL) {
-		queue->tail = item;
-	}
+
 	block->nelt++;
 	queue->total_elt++;
 	queue->total_hit++;
@@ -259,10 +299,10 @@ BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len)
 
 BOOL togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 {
-	TOGO_HASHTABLE_ITEM * hash_item;
 	TOGO_M_QUEUE_ITEM * item;
 	TOGO_M_QUEUE_BLOCK * block;
 	TOGO_M_QUEUE * queue;
+	TOGO_M_QUEUE_ITEM * pi;
 
 	queue = togo_m_queue_get(name);
 	if (queue == NULL) {
@@ -271,18 +311,25 @@ BOOL togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 
 	pthread_mutex_lock(&queue->qlock);
 
-	if (queue->tail == NULL) {
-		queue->head = NULL;
-		pthread_mutex_unlock(&queue->qlock);
-		togo_send_null(socket_item); /* Send "TOGO_NULL"*/
-		return TRUE;
+	/* Search the priority list */
+	pi = togo_m_queue_pi_get(queue);
+	if (pi != NULL) {
+		item = pi;
+	} else {
+		if (queue->tail == NULL) {
+			queue->head = NULL;
+			pthread_mutex_unlock(&queue->qlock);
+			togo_send_null(socket_item); /* Send "TOGO_NULL"*/
+			return TRUE;
+		}
+
+		item = queue->tail;
+		if (item->prev != NULL) {
+			item->prev->next = NULL;
+		}
+		queue->tail = item->prev;
 	}
 
-	item = queue->tail;
-	if (item->prev != NULL) {
-		item->prev->next = NULL;
-	}
-	queue->tail = item->prev;
 	queue->total_elt--;
 	queue->total_hit++;
 	queue->total_read++;
@@ -308,10 +355,10 @@ BOOL togo_m_queue_rpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 
 BOOL togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 {
-	TOGO_HASHTABLE_ITEM * hash_item;
 	TOGO_M_QUEUE_ITEM * item;
 	TOGO_M_QUEUE_BLOCK * block;
 	TOGO_M_QUEUE * queue;
+	TOGO_M_QUEUE_ITEM * pi;
 
 	queue = togo_m_queue_get(name);
 	if (queue == NULL) {
@@ -320,17 +367,24 @@ BOOL togo_m_queue_lpop(u_char * name, TOGO_THREAD_ITEM *socket_item)
 
 	pthread_mutex_lock(&queue->qlock);
 
-	if (queue->head == NULL) {
-		queue->tail = NULL;
-		pthread_mutex_unlock(&queue->qlock);
-		togo_send_null(socket_item); /* Send "TOGO_NULL"*/
-		return TRUE;
+	/* Search the priority list */
+	pi = togo_m_queue_pi_get(queue);
+	if (pi != NULL) {
+		item = pi;
+	} else {
+		if (queue->head == NULL) {
+			queue->tail = NULL;
+			pthread_mutex_unlock(&queue->qlock);
+			togo_send_null(socket_item); /* Send "TOGO_NULL"*/
+			return TRUE;
+		}
+		item = queue->head;
+		if (item->next != NULL) {
+			item->next->prev = NULL;
+		}
+		queue->head = item->next;
 	}
-	item = queue->head;
-	if (item->next != NULL) {
-		item->next->prev = NULL;
-	}
-	queue->head = item->next;
+
 	queue->total_elt--;
 	queue->total_hit++;
 	queue->total_read++;
@@ -602,3 +656,60 @@ static void togo_m_queue_block_free(TOGO_M_QUEUE_BLOCK * block,
 	pthread_mutex_unlock(&togo_m_queue_fblock->flock);
 }
 
+static void togo_m_queue_pi_put(size_t priority, TOGO_M_QUEUE * queue,
+		TOGO_M_QUEUE_ITEM * item)
+{
+	/* Level equal to 1*/
+	if (priority == 1) {
+		if (queue->pi_1 == NULL) {
+			queue->pi_1 = item;
+		} else {
+			item->next = queue->pi_1;
+			queue->pi_1 = item;
+		}
+	}
+
+	/* Level equal to 2*/
+	if (priority == 2) {
+		if (queue->pi_2 == NULL) {
+			queue->pi_2 = item;
+		} else {
+			item->next = queue->pi_2;
+			queue->pi_2 = item;
+		}
+	}
+
+	if (priority == 3) {
+		if (queue->pi_3 == NULL) {
+			queue->pi_3 = item;
+		} else {
+			item->next = queue->pi_3;
+			queue->pi_3 = item;
+		}
+	}
+}
+
+static TOGO_M_QUEUE_ITEM * togo_m_queue_pi_get(TOGO_M_QUEUE * queue)
+{
+	TOGO_M_QUEUE_ITEM * item;
+
+	if (queue->pi_3 != NULL) {
+		item = queue->pi_3;
+		queue->pi_3 = item->next;
+		return item;
+	}
+
+	if (queue->pi_2 != NULL) {
+		item = queue->pi_2;
+		queue->pi_2 = item->next;
+		return item;
+	}
+
+	if (queue->pi_1 != NULL) {
+		item = queue->pi_1;
+		queue->pi_1 = item->next;
+		return item;
+	}
+
+	return NULL;
+}

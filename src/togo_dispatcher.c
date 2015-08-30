@@ -9,17 +9,24 @@
 #include "togo_load.h"
 
 void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
-		TOGO_THREAD_ITEM *socket_item)
+		TOGO_THREAD_ITEM *socket_item, int ntag)
 {
 	BOOL ret = FALSE;
 
-	if (command_tag[0].value == NULL) {
+	/**
+	 * command_tag[0] : Module
+	 * command_tag[1] : Action
+	 * command_tag[2] : Object
+	 * command_tag[3] : Value
+	 * command_tag[4] : Option
+	 */
+	if (ntag < 3 || command_tag[0].value == NULL) {
 		ret = FALSE;
 
 		/* module Q */
 	} else if (strcmp(command_tag[0].value, "Q") == 0) {
 
-		ret = togo_m_queue_command(command_tag, socket_item);
+		ret = togo_m_queue_command(command_tag, socket_item, ntag);
 	}
 
 	/* If fail, We will return "TOGO_FAIL"! */

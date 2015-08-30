@@ -107,7 +107,7 @@ BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 	socket_item->rcurr = new_curr;
 
 	/* Dispatcher */
-	togo_dispatcher(command_tag, socket_item);
+	togo_dispatcher(command_tag, socket_item, ntag);
 
 	/* Send data */
 	if (socket_item->sstatus != 1) {

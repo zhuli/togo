@@ -8,6 +8,6 @@
 #define TOGO_DISPATCHER_H
 
 void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
-		TOGO_THREAD_ITEM *socket_item);
+		TOGO_THREAD_ITEM *socket_item, int ntag);
 
 #endif
