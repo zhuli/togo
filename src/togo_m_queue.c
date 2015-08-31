@@ -146,6 +146,11 @@ BOOL togo_m_queue_rpush(u_char * name, u_char * val, size_t len,
 		/* We need to create a new block when have no enough space! */
 		if (space < (len + sizeof(TOGO_M_QUEUE_ITEM))) {
 
+			if (queue->total_size >= TOGO_M_QUEUE_MAX_SIZE) {
+				pthread_mutex_unlock(&queue->qlock);
+				return FALSE;
+			}
+
 			block = togo_m_queue_block_get();
 			if (block == NULL) {
 				pthread_mutex_unlock(&queue->qlock);
@@ -239,6 +244,11 @@ BOOL togo_m_queue_lpush(u_char * name, u_char * val, size_t len,
 
 		/* We need to create a new block when have no enough space! */
 		if (space < (len + sizeof(TOGO_M_QUEUE_ITEM))) {
+
+			if (queue->total_size >= TOGO_M_QUEUE_MAX_SIZE) {
+				pthread_mutex_unlock(&queue->qlock);
+				return FALSE;
+			}
 
 			block = togo_m_queue_block_get();
 			if (block == NULL) {
