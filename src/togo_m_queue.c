@@ -107,6 +107,7 @@ void togo_m_queue_init(void)
 		togo_exit();
 	}
 	pthread_mutex_init(&togo_m_queue_fblock->flock, NULL);
+	pthread_mutex_init(&queue_global_lock, NULL);
 
 }
 
@@ -529,23 +530,31 @@ static TOGO_M_QUEUE * togo_m_queue_get(u_char * name)
 	TOGO_M_QUEUE * queue;
 
 	hash_item = togo_hashtable_get(togo_m_queue_hashtable, name);
-
-	/* if does not find a queue, we need to create a new queue!*/
 	if (hash_item == NULL) {
-		TOGO_M_QUEUE * queue = togo_m_queue_create(name);
-		if (queue == NULL) {
-			return NULL;
+		/* if does not find a queue, we need to create a new queue!*/
+		pthread_mutex_lock(&queue_global_lock);
+
+		hash_item = togo_hashtable_get(togo_m_queue_hashtable, name);
+
+		if (hash_item == NULL) {
+			TOGO_M_QUEUE * queue = togo_m_queue_create(name);
+			if (queue == NULL) {
+				return NULL;
+			}
+
+			BOOL ret = togo_hashtable_add(togo_m_queue_hashtable, queue->name,
+					(void *) queue);
+			if (ret == FALSE) {
+				return NULL;
+			}
+			hash_item = togo_hashtable_get(togo_m_queue_hashtable, name);
 		}
 
-		BOOL ret = togo_hashtable_add(togo_m_queue_hashtable, queue->name,
-				(void *) queue);
-		if (ret == FALSE) {
-			return NULL;
-		}
-		hash_item = togo_hashtable_get(togo_m_queue_hashtable, name);
+		pthread_mutex_unlock(&queue_global_lock);
 	}
 
 	queue = (TOGO_M_QUEUE *) hash_item->p;
+
 	return queue;
 }
 

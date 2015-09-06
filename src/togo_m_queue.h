@@ -10,9 +10,9 @@
 
 #define TOGO_M_QUEUE_MAX_SIZE (1024 * 1024 * 1024)
 #define TOGO_M_QUEUE_POOL_SIZE (1024 * 1024)
-#define TOGO_M_QUEUE_BLOCK_SIZE (1024 * 1024 * 8)
-#define TOGO_M_QUEUE_BLOCK_NUM 5
-#define TOGO_M_QUEUE_BLOCK_FREELIST_MAX 8
+#define TOGO_M_QUEUE_BLOCK_SIZE (1024 * 1024 * 32)
+#define TOGO_M_QUEUE_BLOCK_NUM 2
+#define TOGO_M_QUEUE_BLOCK_FREELIST_MAX 4
 
 typedef struct togo_m_queue TOGO_M_QUEUE;
 typedef struct togo_m_queue_block TOGO_M_QUEUE_BLOCK;
@@ -80,5 +80,6 @@ BOOL togo_m_queue_status(u_char * name, TOGO_THREAD_ITEM * socket_item);
 TOGO_POOL * togo_m_queue_pool;
 TOGO_HASHTABLE * togo_m_queue_hashtable;
 TOGO_M_QUEUE_FBLOCK * togo_m_queue_fblock;
+pthread_mutex_t queue_global_lock;
 
 #endif /* TOGO_M_QUEUE_H_ */
