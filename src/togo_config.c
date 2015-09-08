@@ -17,9 +17,6 @@ BOOL togo_read_config(u_char *config_file_path)
 
 	fp = fopen(config_file_path, "r+");
 	if (fp == NULL) {
-		togo_log(INFO, "Can not find config file, "
-				"please check your configuration file "
-				"path is correct. path:%s", config_file_path);
 		return FALSE;
 	}
 
