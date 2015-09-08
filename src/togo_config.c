@@ -12,7 +12,6 @@ int togo_config_len;
 
 BOOL togo_read_config(u_char *config_file_path)
 {
-	togo_log(INFO, "Try to read Config file:%s", config_file_path);
 	u_char buf[TOGO_CONFIG_STRING_LINE];
 	FILE * fp;
 
@@ -58,8 +57,8 @@ void togo_clear_config()
 {
 	int i;
 	for (i = 0; i < togo_config_len; i++) {
-		free(togo_config_arr[i].key); //Free the memory
-		free(togo_config_arr[i].value);
+		togo_free(togo_config_arr[i].key); //Free the memory
+		togo_free(togo_config_arr[i].value);
 	}
 	togo_config_len = 0;
 }
