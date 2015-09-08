@@ -80,6 +80,6 @@ BOOL togo_m_queue_status(u_char * name, TOGO_THREAD_ITEM * socket_item);
 TOGO_POOL * togo_m_queue_pool;
 TOGO_HASHTABLE * togo_m_queue_hashtable;
 TOGO_M_QUEUE_FBLOCK * togo_m_queue_fblock;
-pthread_mutex_t queue_global_lock;
+pthread_mutex_t togo_m_queue_glock;
 
 #endif /* TOGO_M_QUEUE_H_ */

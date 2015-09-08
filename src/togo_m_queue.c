@@ -532,7 +532,7 @@ static TOGO_M_QUEUE * togo_m_queue_get(u_char * name)
 	hash_item = togo_hashtable_get(togo_m_queue_hashtable, name);
 	if (hash_item == NULL) {
 		/* if does not find a queue, we need to create a new queue!*/
-		pthread_mutex_lock(&queue_global_lock);
+		pthread_mutex_lock(&togo_m_queue_glock);
 
 		hash_item = togo_hashtable_get(togo_m_queue_hashtable, name);
 
@@ -550,7 +550,7 @@ static TOGO_M_QUEUE * togo_m_queue_get(u_char * name)
 			hash_item = togo_hashtable_get(togo_m_queue_hashtable, name);
 		}
 
-		pthread_mutex_unlock(&queue_global_lock);
+		pthread_mutex_unlock(&togo_m_queue_glock);
 	}
 
 	queue = (TOGO_M_QUEUE *) hash_item->p;
