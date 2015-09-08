@@ -107,7 +107,7 @@ void togo_m_queue_init(void)
 		togo_exit();
 	}
 	pthread_mutex_init(&togo_m_queue_fblock->flock, NULL);
-	pthread_mutex_init(&queue_global_lock, NULL);
+	pthread_mutex_init(&togo_m_queue_glock, NULL);
 
 }
 
