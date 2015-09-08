@@ -23,3 +23,5 @@ void togo_log_init(char * filename)
 
 }
 
+
+

@@ -18,6 +18,7 @@
 #include <sys/syscall.h>
 #include <ctype.h>
 #include <time.h>
+#include <stdarg.h>
 
 #include <event2/event.h>
 #include <event2/bufferevent.h>
