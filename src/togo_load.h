@@ -15,6 +15,7 @@
 #include "togo_string.h"
 #include "togo_hashtable.h"
 #include "togo_array.h"
+#include "togo_log.h"
 #include "togo_config.h"
 #include "togo_init.h"
 #include "togo_server.h"
@@ -22,8 +23,9 @@
 #include "togo_m_queue.h"
 #include "togo_dispatcher.h"
 
-TOGO_POOL * togo_pool;
-TOGO_C togo_c;
-FILE * togo_log_file;
+/* Global variable */
+TOGO_POOL * togo_global_pool;
+TOGO_C togo_global_c;
+TOGO_LOG togo_global_log;
 
 #endif /* TOGO_LOAD_H_ */

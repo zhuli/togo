@@ -8,6 +8,15 @@
 #ifndef TOGO_LOG_H_
 #define TOGO_LOG_H_
 
+FILE * togo_log_file;
+
+typedef struct togo_log TOGO_LOG;
+
+struct togo_log {
+	BOOL file_log;
+	FILE * file;
+};
+
 void togo_log_init(char * filename);
 
 #endif /* TOGO_LOG_H_ */

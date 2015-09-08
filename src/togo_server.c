@@ -104,8 +104,8 @@ BOOL togo_server_init()
 static void togo_mt_init()
 {
 	pthread_create(&server_main_thread, NULL, togo_mt_process, NULL);
-	togo_log(INFO, "Initialize main thread, ip:%s port:%d.", togo_c.ip,
-			togo_c.port);
+	togo_log(INFO, "Initialize main thread, ip:%s port:%d.", togo_global_c.ip,
+			togo_global_c.port);
 }
 
 static void * togo_mt_process(void* args)
@@ -118,16 +118,16 @@ static void * togo_mt_process(void* args)
 	togo_memzero(&server_addr, sizeof(server_addr));
 	server_addr.sin_family = AF_INET;
 
-	if (strcmp(togo_c.ip, TOGO_C_DEFAULT_IP) == 0) {
+	if (strcmp(togo_global_c.ip, TOGO_C_DEFAULT_IP) == 0) {
 		server_addr.sin_addr.s_addr = INADDR_ANY;
 	} else {
-		server_addr.sin_addr.s_addr = inet_addr(togo_c.ip);
+		server_addr.sin_addr.s_addr = inet_addr(togo_global_c.ip);
 	}
 
-	if (togo_c.port == 0) {
+	if (togo_global_c.port == 0) {
 		server_addr.sin_port = htons(TOGO_C_DEFAULT_PORT);
 	} else {
-		server_addr.sin_port = htons(togo_c.port);
+		server_addr.sin_port = htons(togo_global_c.port);
 	}
 
 	server_socketfd = socket(PF_INET, SOCK_STREAM, 0);
@@ -176,7 +176,7 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 	 * We through the way of polling to select a thread,
 	 * Who will taking over a connection.
 	 */
-	int worker_thread_num = togo_c.worker_thread_num;
+	int worker_thread_num = togo_global_c.worker_thread_num;
 	int tid = (last_thread + 1) % worker_thread_num;
 	TOGO_WORKER_THREAD * worker_thread = togo_worker_threads + tid;
 	last_thread = tid;
@@ -219,9 +219,9 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 static void togo_wt_init()
 {
 	int i, j;
-	int worker_thread_num = togo_c.worker_thread_num;
+	int worker_thread_num = togo_global_c.worker_thread_num;
 
-	togo_worker_threads = (TOGO_WORKER_THREAD *) togo_pool_calloc(togo_pool,
+	togo_worker_threads = (TOGO_WORKER_THREAD *) togo_pool_calloc(togo_global_pool,
 			sizeof(TOGO_WORKER_THREAD) * worker_thread_num);
 
 	for (i = 0; i < worker_thread_num; i++) {
@@ -442,7 +442,7 @@ static void togo_wt_destroy_socket(struct bufferevent *bev,
 
 static void togo_q_init(TOGO_WORKER_THREAD *worker_thread)
 {
-	worker_thread->queue = togo_pool_calloc(togo_pool,
+	worker_thread->queue = togo_pool_calloc(togo_global_pool,
 			sizeof(TOGO_THREAD_QUEUE));
 	worker_thread->queue->head = NULL;
 	worker_thread->queue->tail = NULL;
