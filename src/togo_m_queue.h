@@ -26,9 +26,9 @@ struct togo_m_queue {
 
 	uint32_t total_elt;
 	uint32_t total_block;
-	uint32_t total_hit;
-	uint32_t total_write;
-	uint32_t total_read;
+	uint64_t total_hit;
+	uint64_t total_write;
+	uint64_t total_read;
 	uint32_t total_size;
 
 	TOGO_M_QUEUE_BLOCK * block;

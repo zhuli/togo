@@ -250,7 +250,7 @@ void togo_command_build_send_null(TOGO_THREAD_ITEM * socket_item)
 	socket_item->sstatus = 0;
 }
 
-void togo_command_build_send_big(TOGO_THREAD_ITEM * socket_item, u_char * buf,
+void togo_command_build_send_dbig(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 		size_t len, BDATA_CALLBACK callback)
 {
 	socket_item->sstatus = 3;
