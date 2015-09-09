@@ -10,9 +10,9 @@
 
 FILE * togo_log_file;
 
-typedef struct togo_log_s TOGO_LOG;
+typedef struct togo_log TOGO_LOG;
 
-struct togo_log_s {
+struct togo_log {
 	BOOL file_log;
 	FILE * file;
 };
