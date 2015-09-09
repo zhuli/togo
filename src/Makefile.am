@@ -1,6 +1,7 @@
 lib_LIBRARIES=libtogo.a  
 libtogo_a_SOURCES= togo_util.c \
 				   togo_string.c \
+				   togo_log.c \
 				   togo_config.c \
 				   togo_init.c \
 				   togo_server.c \
@@ -14,6 +15,7 @@ libtogo_a_SOURCES= togo_util.c \
 				   togo_m_queue.c 
 include_HEADERS=togo_util.h \
 				togo_string.h \
+				togo_log.h \
 				togo_config.h \
 				togo_init.h \
 				togo.h \

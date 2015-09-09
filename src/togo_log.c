@@ -12,7 +12,7 @@ void togo_log_init(char * filename)
 {
 	FILE * log_file;
 
-	togo_global_log = togo_pool_calloc(togo_global_pool, sizeof(TOGO_LOG));
+	togo_global_log = (TOGO_LOG *) togo_pool_calloc(togo_global_pool, sizeof(TOGO_LOG));
 
 	log_file = fopen(filename, "wr+");
 	if (log_file == NULL) {

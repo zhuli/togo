@@ -26,6 +26,6 @@
 /* Global variable */
 TOGO_POOL * togo_global_pool;
 TOGO_C togo_global_c;
-TOGO_LOG togo_global_log;
+TOGO_LOG * togo_global_log;
 
 #endif /* TOGO_LOAD_H_ */
