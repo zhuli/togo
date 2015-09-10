@@ -19,14 +19,15 @@ TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool)
 {
 	uint32_t i;
 
-	TOGO_HASHTABLE_BUCKET * bucket = togo_pool_calloc(pool,
-			sizeof(TOGO_HASHTABLE_BUCKET) * TOGO_HASHTABLE_BUCKET_NUM);
+	TOGO_HASHTABLE_BUCKET * bucket = (TOGO_HASHTABLE_BUCKET *) togo_pool_calloc(
+			pool, sizeof(TOGO_HASHTABLE_BUCKET) * TOGO_HASHTABLE_BUCKET_NUM);
 	if (bucket == NULL) {
 		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET fail");
 		togo_exit();
 	}
 
-	TOGO_HASHTABLE *hashtable = togo_pool_calloc(pool, sizeof(TOGO_HASHTABLE));
+	TOGO_HASHTABLE *hashtable = (TOGO_HASHTABLE *) togo_pool_calloc(pool,
+			sizeof(TOGO_HASHTABLE));
 	if (hashtable == NULL) {
 		togo_log(ERROR, "malloc TOGO_HASHTABLE fail");
 		togo_exit();
@@ -34,7 +35,7 @@ TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool)
 
 	/* Init Hashtable lock */
 	uint32_t lock_num = TOGO_HASHTABLE_BUCKET_NUM / TOGO_HASHTABLE_LOCK_SIZE;
-	pthread_mutex_t * lock = togo_pool_calloc(pool,
+	pthread_mutex_t * lock = (pthread_mutex_t *) togo_pool_calloc(pool,
 			sizeof(pthread_mutex_t) * lock_num);
 	if (lock == NULL) {
 		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET lock fail");
@@ -65,7 +66,7 @@ BOOL togo_hashtable_add(const TOGO_HASHTABLE * hashtable, u_char *key, void * p)
 	uint32_t current_bucket = togo_hashtable_bucket(hashtable, key, len);
 	TOGO_HASHTABLE_BUCKET * bucket = (hashtable->bucket + current_bucket);
 	TOGO_POOL * pool = hashtable->pool;
-	TOGO_HASHTABLE_ITEM * item = togo_pool_calloc(pool,
+	TOGO_HASHTABLE_ITEM * item = (TOGO_HASHTABLE_ITEM *) togo_pool_calloc(pool,
 			sizeof(TOGO_HASHTABLE_ITEM));
 
 	if (item == NULL) {

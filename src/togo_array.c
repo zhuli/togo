@@ -17,7 +17,7 @@ TOGO_ARRAY * togo_array_create(TOGO_POOL * pool, size_t size, uint32_t n)
 		return NULL;
 	}
 
-	arr = togo_pool_calloc(pool, sizeof(TOGO_ARRAY));
+	arr = (TOGO_ARRAY *) togo_pool_calloc(pool, sizeof(TOGO_ARRAY));
 	if (arr == NULL) {
 		togo_log(ERROR, "malloc a array fail");
 		return NULL;

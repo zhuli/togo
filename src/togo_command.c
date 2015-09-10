@@ -202,7 +202,7 @@ void togo_command_build_send(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 {
 	socket_item->ssize = 0;
 	if (socket_item->sbuf == NULL) {
-		socket_item->sbuf = togo_pool_alloc(socket_item->worker_pool,
+		socket_item->sbuf = (u_char *) togo_pool_alloc(socket_item->worker_pool,
 				TOGO_S_SBUF_INIT_SIZE);
 		socket_item->sbuf_size = TOGO_S_SBUF_INIT_SIZE;
 	}

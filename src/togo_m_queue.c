@@ -100,8 +100,8 @@ void togo_m_queue_init(void)
 		togo_exit();
 	}
 
-	togo_m_queue_fblock = togo_pool_calloc(togo_m_queue_pool,
-			sizeof(TOGO_M_QUEUE_FBLOCK));
+	togo_m_queue_fblock = (TOGO_M_QUEUE_FBLOCK *) togo_pool_calloc(
+			togo_m_queue_pool, sizeof(TOGO_M_QUEUE_FBLOCK));
 	if (togo_m_queue_fblock == NULL) {
 		togo_log(ERROR, "Initialize modules_queue's free block fail.");
 		togo_exit();
@@ -428,7 +428,7 @@ BOOL togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	queue = togo_m_queue_get(name);
 	count = (queue == NULL) ? 0 : queue->total_elt;
 
-	u_char * str = togo_pool_alloc(queue->pool, 12);
+	u_char * str = (u_char *) togo_pool_alloc(queue->pool, 12);
 	togo_itoa(count, str, 10);
 
 	togo_send_data(socket_item, str, strlen(str));
@@ -491,12 +491,14 @@ static TOGO_M_QUEUE * togo_m_queue_create(u_char * name)
 	TOGO_M_QUEUE * queue;
 	TOGO_M_QUEUE_BLOCK * block;
 
-	queue = togo_pool_calloc(togo_m_queue_pool, sizeof(TOGO_M_QUEUE));
+	queue = (TOGO_M_QUEUE *) togo_pool_calloc(togo_m_queue_pool,
+			sizeof(TOGO_M_QUEUE));
 	if (queue == NULL) {
 		return NULL;
 	}
 
-	u_char * buf = togo_pool_alloc(togo_m_queue_pool, togo_pool_strlen(name));
+	u_char * buf = (u_char *) togo_pool_alloc(togo_m_queue_pool,
+			togo_pool_strlen(name));
 	if (buf == NULL) {
 		return NULL;
 	}
@@ -568,9 +570,10 @@ static void togo_m_queue_block_create()
 
 		/* Alloc a large memory to store blocks.
 		 * Each large memory can store TOGO_M_QUEUE_BLOCK_NUM block.*/
-		block_s = togo_pool_calloc(togo_m_queue_pool,
+		block_s = (TOGO_M_QUEUE_BLOCK *) togo_pool_calloc(togo_m_queue_pool,
 				sizeof(TOGO_M_QUEUE_BLOCK));
-		block = togo_pool_calloc(togo_m_queue_pool, TOGO_M_QUEUE_BLOCK_SIZE);
+		block = (u_char *) togo_pool_calloc(togo_m_queue_pool,
+				TOGO_M_QUEUE_BLOCK_SIZE);
 		if (block_s == NULL || block == NULL) {
 
 			if (block != NULL) {

@@ -187,10 +187,11 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 	 * When this connection is disconnect, The socket_item will be freed.
 	 */
 	TOGO_POOL * worker_pool = togo_pool_create(TOGO_WORKER_POOL_SIZE);
-	TOGO_THREAD_ITEM * socket_item = togo_pool_calloc(worker_pool,
-			sizeof(TOGO_THREAD_ITEM));
-	rbuf = togo_pool_alloc(worker_pool, sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE);
-	sbuf = togo_pool_alloc(worker_pool, TOGO_S_SBUF_INIT_SIZE);
+	TOGO_THREAD_ITEM * socket_item = (TOGO_THREAD_ITEM *) togo_pool_calloc(
+			worker_pool, sizeof(TOGO_THREAD_ITEM));
+	rbuf = (u_char *) togo_pool_alloc(worker_pool,
+			sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE);
+	sbuf = (u_char *) togo_pool_alloc(worker_pool, TOGO_S_SBUF_INIT_SIZE);
 	if (rbuf == NULL || sbuf == NULL) {
 		togo_log(ERROR, "togo_pool_alloc a rbuf or sbuf error.");
 		return;
@@ -221,8 +222,8 @@ static void togo_wt_init()
 	int i, j;
 	int worker_thread_num = togo_global_c.worker_thread_num;
 
-	togo_worker_threads = (TOGO_WORKER_THREAD *) togo_pool_calloc(togo_global_pool,
-			sizeof(TOGO_WORKER_THREAD) * worker_thread_num);
+	togo_worker_threads = (TOGO_WORKER_THREAD *) togo_pool_calloc(
+			togo_global_pool, sizeof(TOGO_WORKER_THREAD) * worker_thread_num);
 
 	for (i = 0; i < worker_thread_num; i++) {
 		togo_wt_setup(&togo_worker_threads[i]);
@@ -442,8 +443,8 @@ static void togo_wt_destroy_socket(struct bufferevent *bev,
 
 static void togo_q_init(TOGO_WORKER_THREAD *worker_thread)
 {
-	worker_thread->queue = togo_pool_calloc(togo_global_pool,
-			sizeof(TOGO_THREAD_QUEUE));
+	worker_thread->queue = (TOGO_THREAD_QUEUE *) togo_pool_calloc(
+			togo_global_pool, sizeof(TOGO_THREAD_QUEUE));
 	worker_thread->queue->head = NULL;
 	worker_thread->queue->tail = NULL;
 }
