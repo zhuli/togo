@@ -133,6 +133,7 @@ BOOL togo_m_count_clear(u_char * name)
 	togo_hashtable_remove(togo_m_count_hashtable, name);
 	pool = item->pool;
 	togo_pool_free_data(pool, (void *) item->name);
+	togo_pool_free_data(pool, (void *) item);
 
 	pthread_mutex_unlock(&togo_m_queue_glock);
 }
