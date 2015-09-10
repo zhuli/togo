@@ -108,7 +108,7 @@ BOOL togo_hashtable_remove(const TOGO_HASHTABLE * hashtable, u_char *key)
 				pre->next = item->next;
 			}
 
-			togo_pool_free_data(hashtable->pool, item);
+			togo_pool_free_data(hashtable->pool, (void *) item);
 			bucket->size--;
 
 			break;

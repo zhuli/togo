@@ -432,7 +432,7 @@ BOOL togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	togo_itoa(count, str, 10);
 
 	togo_send_data(socket_item, str, strlen(str));
-	togo_pool_free_data(queue->pool, str);
+	togo_pool_free_data(queue->pool, (void *) str);
 	return TRUE;
 }
 
@@ -541,12 +541,14 @@ static TOGO_M_QUEUE * togo_m_queue_get(u_char * name)
 		if (hash_item == NULL) {
 			TOGO_M_QUEUE * queue = togo_m_queue_create(name);
 			if (queue == NULL) {
+				pthread_mutex_unlock(&togo_m_queue_glock);
 				return NULL;
 			}
 
 			BOOL ret = togo_hashtable_add(togo_m_queue_hashtable, queue->name,
 					(void *) queue);
 			if (ret == FALSE) {
+				pthread_mutex_unlock(&togo_m_queue_glock);
 				return NULL;
 			}
 			hash_item = togo_hashtable_get(togo_m_queue_hashtable, name);
@@ -577,10 +579,10 @@ static void togo_m_queue_block_create()
 		if (block_s == NULL || block == NULL) {
 
 			if (block != NULL) {
-				togo_pool_free_large(togo_m_queue_pool, block);
+				togo_pool_free_large(togo_m_queue_pool, (void *) block);
 			}
 			if (block_s != NULL) {
-				togo_pool_free_data(togo_m_queue_pool, block_s);
+				togo_pool_free_data(togo_m_queue_pool, (void *) block_s);
 			}
 			togo_log(ERROR, "Initialize modules_queue's block fail.");
 			return;
@@ -661,11 +663,11 @@ static void togo_m_queue_block_free(TOGO_M_QUEUE_BLOCK * block,
 	block->next = NULL;
 
 	if (block->buf == NULL) {
-		togo_pool_free_data(pool, block);
+		togo_pool_free_data(pool, (void *) block);
 	} else {
 		if (togo_m_queue_fblock->total >= TOGO_M_QUEUE_BLOCK_FREELIST_MAX) {
-			togo_pool_free_large(pool, block->buf);
-			togo_pool_free_data(pool, block);
+			togo_pool_free_large(pool, (void *) block->buf);
+			togo_pool_free_data(pool, (void *) block);
 
 		} else {
 			block->next = togo_m_queue_fblock->block;

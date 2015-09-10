@@ -232,7 +232,7 @@ void * togo_pool_realloc(TOGO_POOL * pool, void * p, size_t size,
 	}
 	togo_memcpy(new, p, size);
 
-	togo_pool_free_data(pool, p);
+	togo_pool_free_data(pool, (void *) p);
 
 	return new;
 

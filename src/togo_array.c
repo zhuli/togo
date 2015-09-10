@@ -26,7 +26,7 @@ TOGO_ARRAY * togo_array_create(TOGO_POOL * pool, size_t size, uint32_t n)
 	elt = togo_pool_calloc(pool, size * n);
 	if (elt == NULL) {
 		togo_log(ERROR, "malloc a array fail");
-		togo_pool_free_data(pool, arr);
+		togo_pool_free_data(pool, (void *) arr);
 		return NULL;
 	}
 
@@ -55,8 +55,8 @@ void togo_array_destory(TOGO_ARRAY * arr)
 	elt = arr->elt;
 	pool = arr->pool;
 
-	togo_pool_free_data(pool, arr);
-	togo_pool_free_data(pool, elt);
+	togo_pool_free_data(pool, (void *) arr);
+	togo_pool_free_data(pool, (void *) elt);
 
 	pthread_mutex_unlock(&arr->lock);
 
@@ -79,7 +79,7 @@ void * togo_array_push(TOGO_ARRAY * arr)
 		pool = arr->pool;
 		elt = arr->elt;
 
-		new_elt = togo_pool_realloc(pool, elt, osize, nsize);
+		new_elt = togo_pool_realloc(pool, (void *) elt, osize, nsize);
 		if (new_elt == NULL) {
 			togo_log(ERROR, "realloc a array fail");
 			pthread_mutex_unlock(&arr->lock);
@@ -125,7 +125,7 @@ void * togo_array_push_n(TOGO_ARRAY * arr, uint32_t n)
 		pool = arr->pool;
 		elt = arr->elt;
 
-		new_elt = togo_pool_realloc(pool, elt, osize, nsize);
+		new_elt = togo_pool_realloc(pool, (void *) elt, osize, nsize);
 		if (new_elt == NULL) {
 			togo_log(ERROR, "realloc a array fail");
 			pthread_mutex_unlock(&arr->lock);

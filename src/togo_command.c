@@ -35,7 +35,7 @@ enum TOGO_READ_NETWORK togo_command_read_network(struct bufferevent *bev,
 			++realloc_num;
 
 			u_char *new_rbuf = togo_pool_realloc(socket_item->worker_pool,
-					socket_item->rbuf, socket_item->rsize,
+					(void *) socket_item->rbuf, socket_item->rsize,
 					socket_item->rsize * 2);
 			if (!new_rbuf) {
 				togo_log(INFO, "Realloc socket_item error.");
@@ -219,7 +219,7 @@ void togo_command_build_send(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 		}
 
 		socket_item->sbuf = togo_pool_realloc(socket_item->worker_pool,
-				socket_item->sbuf, sbuf_size, new_buf_size);
+				(void *) socket_item->sbuf, sbuf_size, new_buf_size);
 		socket_item->sbuf_size = new_buf_size;
 	}
 

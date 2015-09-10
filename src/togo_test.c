@@ -51,7 +51,7 @@ void togo_pool_test()
 	}
 
 	//togo_pool_realloc(pool, 20);
-	p = togo_pool_realloc(pool, p, 10, 15);
+	p = togo_pool_realloc(pool, (void *) p, 10, 15);
 	togo_strcpy(p, "woshishen11234");
 	if (strcmp(p, "woshishen11234") == 0 && togo_strlen(p) == 14) {
 		togo_log(DEBUG,
@@ -63,8 +63,8 @@ void togo_pool_test()
 	}
 
 	//togo_pool_free_data
-	togo_pool_free_data(pool, p);
-	togo_pool_free_large(pool, p1);
+	togo_pool_free_data(pool, (void *) p);
+	togo_pool_free_large(pool, (void *) p1);
 
 	if (pool->large == NULL) {
 		togo_log(DEBUG,

@@ -20,8 +20,9 @@ struct togo_m_count {
 };
 
 void togo_m_count_init(void);
-BOOL togo_m_count_plus(u_char * name);
-BOOL togo_m_count_minus(u_char * name);
+BOOL togo_m_count_plus(u_char * name, uint32_t step);
+BOOL togo_m_count_minus(u_char * name, uint32_t step);
+BOOL togo_m_count_clear(u_char * name);
 
 TOGO_POOL * togo_m_count_pool;
 TOGO_HASHTABLE * togo_m_count_hashtable;
