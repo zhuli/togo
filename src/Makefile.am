@@ -12,7 +12,8 @@ libtogo_a_SOURCES= togo_util.c \
 				   togo_hash.c \
 				   togo_pool.c \
 				   togo_array.c \
-				   togo_m_queue.c 
+				   togo_m_queue.c \
+				   togo_m_count.c 
 include_HEADERS=togo_util.h \
 				togo_string.h \
 				togo_log.h \
@@ -28,4 +29,5 @@ include_HEADERS=togo_util.h \
 				togo_hash.h \
 				togo_pool.h \
 				togo_array.h \
-				togo_m_queue.h 
+				togo_m_queue.h \
+				togo_m_count.h 

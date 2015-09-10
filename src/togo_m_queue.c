@@ -431,7 +431,7 @@ BOOL togo_m_queue_count(u_char * name, TOGO_THREAD_ITEM * socket_item)
 	u_char * str = (u_char *) togo_pool_alloc(queue->pool, 12);
 	togo_itoa(count, str, 10);
 
-	togo_send_data(socket_item, str, strlen(str));
+	togo_send_data(socket_item, str, togo_strlen(str));
 	togo_pool_free_data(queue->pool, (void *) str);
 	return TRUE;
 }
@@ -455,27 +455,27 @@ BOOL togo_m_queue_status(u_char * name, TOGO_THREAD_ITEM * socket_item)
 
 	togo_string_append(&togo_str, "total_elt:", 10);
 	togo_itoa(queue->total_elt, int_str, 10);
-	togo_string_append(&togo_str, int_str, strlen(int_str));
+	togo_string_append(&togo_str, int_str, togo_strlen(int_str));
 
 	togo_string_append(&togo_str, ";total_block:", 13);
 	togo_itoa(queue->total_block, int_str, 10);
-	togo_string_append(&togo_str, int_str, strlen(int_str));
+	togo_string_append(&togo_str, int_str, togo_strlen(int_str));
 
 	togo_string_append(&togo_str, ";total_hit:", 11);
 	togo_itoa(queue->total_hit, int_str, 10);
-	togo_string_append(&togo_str, int_str, strlen(int_str));
+	togo_string_append(&togo_str, int_str, togo_strlen(int_str));
 
 	togo_string_append(&togo_str, ";total_write:", 13);
 	togo_itoa(queue->total_write, int_str, 10);
-	togo_string_append(&togo_str, int_str, strlen(int_str));
+	togo_string_append(&togo_str, int_str, togo_strlen(int_str));
 
 	togo_string_append(&togo_str, ";total_read:", 12);
 	togo_itoa(queue->total_read, int_str, 10);
-	togo_string_append(&togo_str, int_str, strlen(int_str));
+	togo_string_append(&togo_str, int_str, togo_strlen(int_str));
 
 	togo_string_append(&togo_str, ";total_size:", 12);
 	togo_itoa(queue->total_size, int_str, 10);
-	togo_string_append(&togo_str, int_str, strlen(int_str));
+	togo_string_append(&togo_str, int_str, togo_strlen(int_str));
 
 	togo_send_data(socket_item, togo_str->buf, togo_str->str_size);
 

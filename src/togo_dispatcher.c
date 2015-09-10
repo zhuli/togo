@@ -23,10 +23,15 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 	if (ntag < 3 || command_tag[0].value == NULL) {
 		ret = FALSE;
 
-		/* module Q */
+		/* module Queue */
 	} else if (strcmp(command_tag[0].value, "Q") == 0) {
 
 		ret = togo_m_queue_command(command_tag, socket_item, ntag);
+
+		/* module Count */
+	} else if (strcmp(command_tag[0].value, "C") == 0) {
+
+		ret = togo_m_count_command(command_tag, socket_item, ntag);
 	}
 
 	/* If fail, We will return "TOGO_FAIL"! */

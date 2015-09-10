@@ -145,4 +145,5 @@ static void togo_pool_init()
 static void togo_module_init()
 {
 	togo_m_queue_init(); /* Queue module*/
+	togo_m_count_init(); /* Count module*/
 }
