@@ -64,22 +64,22 @@ BOOL togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
 		}
 		ret = togo_m_queue_rpush(qname, value, len, priority);
 
-	} else if (togo_strcmp(command_tag[1].value, "LPUSH") == 0) {
+	} else if (togo_strcmp(action, "LPUSH") == 0) {
 		if (value == NULL || len == 0) {
 			return ret;
 		}
 		ret = togo_m_queue_lpush(qname, value, len, priority);
 
-	} else if (togo_strcmp(command_tag[1].value, "LPOP") == 0) {
+	} else if (togo_strcmp(action, "LPOP") == 0) {
 		ret = togo_m_queue_lpop(qname, socket_item);
 
-	} else if (togo_strcmp(command_tag[1].value, "RPOP") == 0) {
+	} else if (togo_strcmp(action, "RPOP") == 0) {
 		ret = togo_m_queue_rpop(qname, socket_item);
 
-	} else if (togo_strcmp(command_tag[1].value, "COUNT") == 0) {
+	} else if (togo_strcmp(action, "COUNT") == 0) {
 		ret = togo_m_queue_count(qname, socket_item);
 
-	} else if (togo_strcmp(command_tag[1].value, "STATUS") == 0) {
+	} else if (togo_strcmp(action, "STATUS") == 0) {
 		ret = togo_m_queue_status(qname, socket_item);
 	}
 

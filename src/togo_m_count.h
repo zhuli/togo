@@ -22,9 +22,9 @@ struct togo_m_count {
 BOOL togo_m_count_command(TOGO_COMMAND_TAG command_tag[],
 		TOGO_THREAD_ITEM *socket_item, int ntag);
 void togo_m_count_init(void);
-BOOL togo_m_count_plus(u_char * name, uint32_t step,
+BOOL togo_m_count_plus(u_char * name, int32_t step,
 		TOGO_THREAD_ITEM *socket_item);
-BOOL togo_m_count_minus(u_char * name, uint32_t step,
+BOOL togo_m_count_minus(u_char * name, int32_t step,
 		TOGO_THREAD_ITEM *socket_item);
 BOOL togo_m_count_clear(u_char * name);
 
