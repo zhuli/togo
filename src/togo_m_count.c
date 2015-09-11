@@ -8,7 +8,9 @@
 #include "togo.h"
 #include "togo_load.h"
 
-static TOGO_M_COUNT * togo_m_count_get(u_char * name);
+static TOGO_M_COUNT * togo_m_count_item(u_char * name);
+static void togo_m_count_send(TOGO_THREAD_ITEM *socket_item,
+		TOGO_M_COUNT * item);
 
 BOOL togo_m_count_command(TOGO_COMMAND_TAG command_tag[],
 		TOGO_THREAD_ITEM *socket_item, int ntag)
@@ -20,7 +22,7 @@ BOOL togo_m_count_command(TOGO_COMMAND_TAG command_tag[],
 
 	/**
 	 * command_tag[0] : Module  C
-	 * command_tag[1] : Action  PLUS|MINUS|CLEAR
+	 * command_tag[1] : Action  PLUS|MINUS|GET|RESET
 	 * command_tag[2] : Object  Count name
 	 * command_tag[3] : Step    1  MAX:99999999
 	 */
@@ -50,8 +52,11 @@ BOOL togo_m_count_command(TOGO_COMMAND_TAG command_tag[],
 	} else if (togo_strcmp(action, "MINUS") == 0) {
 		ret = togo_m_count_minus(cname, step, socket_item);
 
-	} else if (togo_strcmp(action, "CLEAR") == 0) {
-		ret = togo_m_count_clear(cname);
+	} else if (togo_strcmp(action, "GET") == 0) {
+		ret = togo_m_count_get(cname, socket_item);
+
+	} else if (togo_strcmp(action, "RESET") == 0) {
+		ret = togo_m_count_reset(cname, socket_item);
 
 	}
 
@@ -79,17 +84,15 @@ BOOL togo_m_count_plus(u_char * name, int32_t step,
 		TOGO_THREAD_ITEM *socket_item)
 {
 	TOGO_M_COUNT * item;
-	char str[20];
 
-	item = togo_m_count_get(name);
+	item = togo_m_count_item(name);
 	if (item == NULL) {
 		return FALSE;
 	}
 	pthread_mutex_lock(&item->lock);
 
 	item->count += step;
-	togo_itoa(item->count, str, 10);
-	togo_send_data(socket_item, str, togo_strlen(str));
+	togo_m_count_send(socket_item, item);
 
 	pthread_mutex_unlock(&item->lock);
 
@@ -100,46 +103,63 @@ BOOL togo_m_count_minus(u_char * name, int32_t step,
 		TOGO_THREAD_ITEM *socket_item)
 {
 	TOGO_M_COUNT * item;
-	char str[20];
 
-	item = togo_m_count_get(name);
+	item = togo_m_count_item(name);
 	if (item == NULL) {
 		return FALSE;
 	}
 	pthread_mutex_lock(&item->lock);
 
 	item->count -= step;
-	togo_itoa(item->count, str, 10);
-	togo_send_data(socket_item, str, togo_strlen(str));
+	togo_m_count_send(socket_item, item);
 
 	pthread_mutex_unlock(&item->lock);
 
 	return TRUE;
 }
 
-BOOL togo_m_count_clear(u_char * name)
+BOOL togo_m_count_get(u_char * name, TOGO_THREAD_ITEM *socket_item)
 {
 	TOGO_M_COUNT * item;
-	TOGO_POOL * pool;
 
-	item = togo_m_count_get(name);
+	item = togo_m_count_item(name);
 	if (item == NULL) {
 		return FALSE;
 	}
+	pthread_mutex_lock(&item->lock);
 
-	pthread_mutex_lock(&togo_m_count_glock);
+	togo_m_count_send(socket_item, item);
 
-	togo_hashtable_remove(togo_m_count_hashtable, name);
-	pool = item->pool;
-	togo_pool_free_data(pool, (void *) item->name);
-	togo_pool_free_data(pool, (void *) item);
-
-	pthread_mutex_unlock(&togo_m_count_glock);
+	pthread_mutex_unlock(&item->lock);
 
 	return TRUE;
 }
 
-static TOGO_M_COUNT * togo_m_count_get(u_char * name)
+BOOL togo_m_count_reset(u_char * name, TOGO_THREAD_ITEM *socket_item) {
+	TOGO_M_COUNT * item;
+
+	item = togo_m_count_item(name);
+	if (item == NULL) {
+		return FALSE;
+	}
+	pthread_mutex_lock(&item->lock);
+	item->count = 0;
+	togo_m_count_send(socket_item, item);
+
+	pthread_mutex_unlock(&item->lock);
+
+	return TRUE;
+}
+
+static void togo_m_count_send(TOGO_THREAD_ITEM *socket_item,
+		TOGO_M_COUNT * item)
+{
+	char str[20];
+	togo_itoa(item->count, str, 10);
+	togo_send_data(socket_item, str, togo_strlen(str));
+}
+
+static TOGO_M_COUNT * togo_m_count_item(u_char * name)
 {
 	TOGO_HASHTABLE_ITEM * hash_item;
 	TOGO_M_COUNT * item;
@@ -171,6 +191,7 @@ static TOGO_M_COUNT * togo_m_count_get(u_char * name)
 			item->pool = togo_m_count_pool;
 			item->name = buf;
 			item->count = 0;
+			item->clear = FALSE;
 
 			BOOL ret = togo_hashtable_add(togo_m_count_hashtable, item->name,
 					(void *) item);

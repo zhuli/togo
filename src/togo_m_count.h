@@ -17,6 +17,7 @@ struct togo_m_count {
 	int64_t count;
 	pthread_mutex_t lock;
 	TOGO_POOL * pool;
+	BOOL clear;
 };
 
 BOOL togo_m_count_command(TOGO_COMMAND_TAG command_tag[],
@@ -26,7 +27,8 @@ BOOL togo_m_count_plus(u_char * name, int32_t step,
 		TOGO_THREAD_ITEM *socket_item);
 BOOL togo_m_count_minus(u_char * name, int32_t step,
 		TOGO_THREAD_ITEM *socket_item);
-BOOL togo_m_count_clear(u_char * name);
+BOOL togo_m_count_get(u_char * name, TOGO_THREAD_ITEM *socket_item);
+BOOL togo_m_count_reset(u_char * name, TOGO_THREAD_ITEM *socket_item);
 
 TOGO_POOL * togo_m_count_pool;
 TOGO_HASHTABLE * togo_m_count_hashtable;

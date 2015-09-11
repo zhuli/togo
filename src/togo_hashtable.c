@@ -129,6 +129,9 @@ TOGO_HASHTABLE_ITEM * togo_hashtable_get(const TOGO_HASHTABLE * hashtable,
 	size_t len = togo_strlen(key);
 	uint32_t current_bucket = togo_hashtable_bucket(hashtable, key, len);
 	TOGO_HASHTABLE_BUCKET * bucket = (hashtable->bucket + current_bucket);
+
+	togo_hashtable_lock(hashtable, current_bucket);
+
 	TOGO_HASHTABLE_ITEM * item = bucket->item;
 	TOGO_HASHTABLE_ITEM * current = NULL;
 
@@ -140,6 +143,8 @@ TOGO_HASHTABLE_ITEM * togo_hashtable_get(const TOGO_HASHTABLE * hashtable,
 		}
 		item = item->next;
 	}
+
+	togo_hashtable_unlock(hashtable, current_bucket);
 
 	return current;
 }
