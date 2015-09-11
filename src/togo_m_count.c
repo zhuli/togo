@@ -85,7 +85,6 @@ BOOL togo_m_count_plus(u_char * name, int32_t step,
 	if (item == NULL) {
 		return FALSE;
 	}
-
 	pthread_mutex_lock(&item->lock);
 
 	item->count += step;
@@ -107,7 +106,6 @@ BOOL togo_m_count_minus(u_char * name, int32_t step,
 	if (item == NULL) {
 		return FALSE;
 	}
-
 	pthread_mutex_lock(&item->lock);
 
 	item->count -= step;
@@ -130,12 +128,15 @@ BOOL togo_m_count_clear(u_char * name)
 	}
 
 	pthread_mutex_lock(&togo_m_count_glock);
+
 	togo_hashtable_remove(togo_m_count_hashtable, name);
 	pool = item->pool;
 	togo_pool_free_data(pool, (void *) item->name);
 	togo_pool_free_data(pool, (void *) item);
 
-	pthread_mutex_unlock(&togo_m_queue_glock);
+	pthread_mutex_unlock(&togo_m_count_glock);
+
+	return TRUE;
 }
 
 static TOGO_M_COUNT * togo_m_count_get(u_char * name)
@@ -144,6 +145,7 @@ static TOGO_M_COUNT * togo_m_count_get(u_char * name)
 	TOGO_M_COUNT * item;
 
 	hash_item = togo_hashtable_get(togo_m_count_hashtable, name);
+
 	if (hash_item == NULL) {
 		/* if does not find a count item, we need to create a new queue!*/
 		pthread_mutex_lock(&togo_m_count_glock);
@@ -170,7 +172,7 @@ static TOGO_M_COUNT * togo_m_count_get(u_char * name)
 			item->name = buf;
 			item->count = 0;
 
-			BOOL ret = togo_hashtable_add(togo_m_count_hashtable, name,
+			BOOL ret = togo_hashtable_add(togo_m_count_hashtable, item->name,
 					(void *) item);
 			if (ret == FALSE) {
 				pthread_mutex_unlock(&togo_m_count_glock);
@@ -184,6 +186,5 @@ static TOGO_M_COUNT * togo_m_count_get(u_char * name)
 	}
 
 	item = (TOGO_M_COUNT *) hash_item->p;
-
 	return item;
 }
