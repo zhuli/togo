@@ -15,7 +15,9 @@ int togo_get_time()
 
 int togo_log(enum log_level level, const u_char *fmt, ...)
 {
+	u_char str[1024];
 	u_char *x = NULL;
+	uint32_t len = 0;
 	switch (level) {
 	case ERROR:
 		x = "[ERROR] ";
@@ -29,12 +31,17 @@ int togo_log(enum log_level level, const u_char *fmt, ...)
 		x = "[DEBUG] ";
 		break;
 	}
-	printf(x);
+	len = togo_strlen(x);
+	togo_memcpy(str, x, len);
+
 	va_list args;
 	va_start(args, fmt);
-	vprintf(fmt, args);
+	vsprintf((str + len), fmt, args);
 	va_end(args);
-	printf("\r\n");
+
+	len = togo_strlen(str);
+ 	togo_memcpy((str + len), "\r\n\0", 3);
+	printf(str);
 }
 
 void togo_exit()

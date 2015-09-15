@@ -103,6 +103,12 @@ BOOL togo_server_init()
 
 static void togo_mt_init()
 {
+	togo_thread_flist = (TOGO_THREAD_FLIST *) togo_pool_calloc(togo_global_pool,
+			sizeof(TOGO_THREAD_FLIST));
+	togo_thread_flist->next = NULL;
+	togo_thread_flist->total = 0;
+	pthread_mutex_init(&togo_thread_flist->lock, NULL);
+
 	pthread_create(&server_main_thread, NULL, togo_mt_process, NULL);
 	togo_log(INFO, "Initialize main thread, ip:%s port:%d.", togo_global_c.ip,
 			togo_global_c.port);
@@ -186,26 +192,41 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 	 * Through this socket_item , We store each connection details.
 	 * When this connection is disconnect, The socket_item will be freed.
 	 */
-	TOGO_POOL * worker_pool = togo_pool_create(TOGO_WORKER_POOL_SIZE);
-	TOGO_THREAD_ITEM * socket_item = (TOGO_THREAD_ITEM *) togo_pool_calloc(
-			worker_pool, sizeof(TOGO_THREAD_ITEM));
-	rbuf = (u_char *) togo_pool_alloc(worker_pool,
-			sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE);
-	sbuf = (u_char *) togo_pool_alloc(worker_pool, TOGO_S_SBUF_INIT_SIZE);
-	if (rbuf == NULL || sbuf == NULL) {
-		togo_log(ERROR, "togo_pool_alloc a rbuf or sbuf error.");
-		return;
+	TOGO_THREAD_ITEM * socket_item = NULL;
+	/* Search the free list */
+	if (togo_thread_flist->next != NULL) {
+		pthread_mutex_lock(&togo_thread_flist->lock);
+		if (togo_thread_flist->next != NULL) {
+			socket_item = togo_thread_flist->next;
+			togo_thread_flist->next = socket_item->next;
+			togo_thread_flist->total--;
+		}
+		pthread_mutex_unlock(&togo_thread_flist->lock);
+	}
+
+	if (socket_item == NULL) {
+		TOGO_POOL * worker_pool = togo_pool_create(TOGO_WORKER_POOL_SIZE);
+		socket_item = (TOGO_THREAD_ITEM *) togo_pool_calloc(worker_pool,
+				sizeof(TOGO_THREAD_ITEM));
+		rbuf = (u_char *) togo_pool_alloc(worker_pool,
+				sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE);
+		sbuf = (u_char *) togo_pool_alloc(worker_pool, TOGO_S_SBUF_INIT_SIZE);
+		if (rbuf == NULL || sbuf == NULL) {
+			togo_log(ERROR, "togo_pool_alloc a rbuf or sbuf error.");
+			return;
+		}
+
+		socket_item->worker_pool = worker_pool;
+		socket_item->rbuf = rbuf;
+		socket_item->sbuf = sbuf;
+		socket_item->rsize = sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE;
+		socket_item->sbuf_size = sizeof(u_char) * TOGO_S_SBUF_INIT_SIZE;
 	}
 
 	socket_item->sfd = client_socketfd;
-	socket_item->rbuf = rbuf;
 	socket_item->rcurr = socket_item->rbuf;
-	socket_item->rsize = sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE;
 	socket_item->rbytes = 0;
-	socket_item->sbuf = sbuf;
 	socket_item->ssize = 0;
-	socket_item->sbuf_size = sizeof(u_char) * TOGO_S_SBUF_INIT_SIZE;
-	socket_item->worker_pool = worker_pool;
 
 	togo_q_push(worker_thread, socket_item);
 
@@ -437,7 +458,28 @@ static void togo_wt_destroy_socket(struct bufferevent *bev,
 	}
 
 	if (socket_item->worker_pool) {
-		togo_pool_destroy(socket_item->worker_pool);
+		if (togo_thread_flist->total >= TOGO_S_FLIST_MAX) {
+			togo_pool_destroy(socket_item->worker_pool);
+		} else {
+
+			/* Put socket_item in to the free list */
+			pthread_mutex_lock(&togo_thread_flist->lock);
+
+			if (togo_thread_flist->total >= TOGO_S_FLIST_MAX) {
+				togo_pool_destroy(socket_item->worker_pool);
+			} else {
+				if (togo_thread_flist->next == NULL) {
+					socket_item->next = NULL;
+					togo_thread_flist->next = socket_item;
+				} else {
+					socket_item->next = togo_thread_flist->next;
+					togo_thread_flist->next = socket_item;
+				}
+				togo_thread_flist->total++;
+			}
+
+			pthread_mutex_unlock(&togo_thread_flist->lock);
+		}
 	}
 }
 

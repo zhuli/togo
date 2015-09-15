@@ -14,10 +14,12 @@
 #define TOGO_S_SBUF_INIT_SIZE 1024
 #define TOGO_S_SBUF_MAX_SIZE 8192
 #define TOGO_S_SBUF_SPACE_SIZE 128
+#define TOGO_S_FLIST_MAX 1024
 
 typedef struct togo_thread_item TOGO_THREAD_ITEM;
 typedef struct togo_thread_queue TOGO_THREAD_QUEUE;
 typedef struct togo_worker_threads TOGO_WORKER_THREAD;
+typedef struct togo_thread_item_flist TOGO_THREAD_FLIST;
 typedef void (*BDATA_CALLBACK)(TOGO_THREAD_ITEM * socket_item);
 typedef int (*SEND_CALLBACK)(TOGO_THREAD_ITEM * socket_item);
 
@@ -46,7 +48,7 @@ struct togo_thread_item {
 	size_t bssize; /* The size of the big data buffer!*/
 	BDATA_CALLBACK bscb; /* The callback function when send the end of the big data*/
 
-	TOGO_THREAD_ITEM *next; /* a list of TOGO_THREAD_ITEM struct */
+	TOGO_THREAD_ITEM *next; /* a list of TOGO_THREAD_ITEM struct or free list */
 	TOGO_POOL * worker_pool; /* Worker memory pool */
 };
 
@@ -65,6 +67,14 @@ struct togo_worker_threads {
 	int notify_send_fd; /* pipe send*/
 	TOGO_THREAD_QUEUE * queue; /* Work thread queue */
 };
+
+struct togo_thread_item_flist {
+	TOGO_THREAD_ITEM * next;
+	uint32_t total;
+	pthread_mutex_t lock;
+};
+
+TOGO_THREAD_FLIST * togo_thread_flist;
 TOGO_WORKER_THREAD * togo_worker_threads;
 
 /**
