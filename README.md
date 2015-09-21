@@ -15,11 +15,13 @@ COUNTER PLUS test 1
 COUNTER MINUS #NAME #NUM
 COUNTER MINUS test 1
 ```
+
 3. 计数器获取一个值<br>
 ```c
 COUNTER GET #NAME
 COUNTER GET test
 ```
+
 4. 计数器初始化<br>
 ```c
 COUNTER RESET #NAME
