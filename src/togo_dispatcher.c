@@ -24,12 +24,12 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 		ret = FALSE;
 
 		/* module Queue */
-	} else if (strcmp(command_tag[0].value, "Q") == 0) {
+	} else if (strcmp(command_tag[0].value, "QUEUE") == 0) {
 
 		ret = togo_m_queue_command(command_tag, socket_item, ntag);
 
 		/* module Count */
-	} else if (strcmp(command_tag[0].value, "C") == 0) {
+	} else if (strcmp(command_tag[0].value, "COUNTER") == 0) {
 
 		ret = togo_m_count_command(command_tag, socket_item, ntag);
 	}

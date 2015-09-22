@@ -29,7 +29,7 @@ BOOL togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
 	uint32_t priority = 0;
 
 	/**
-	 * command_tag[0] : Module  Q
+	 * command_tag[0] : Module  QUEUE
 	 * command_tag[1] : Action  RPUSH|LPUSH|LPOP|RPOP|COUNT|STATUS
 	 * command_tag[2] : Object  Queue name
 	 * command_tag[3] : Value   value

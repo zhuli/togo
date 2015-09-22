@@ -21,7 +21,7 @@ BOOL togo_m_count_command(TOGO_COMMAND_TAG command_tag[],
 	int32_t step = 1;
 
 	/**
-	 * command_tag[0] : Module  C
+	 * command_tag[0] : Module  COUNTER
 	 * command_tag[1] : Action  PLUS|MINUS|GET|RESET
 	 * command_tag[2] : Object  Count name
 	 * command_tag[3] : Step    1  MAX:99999999
