@@ -54,7 +54,7 @@ QUEUE RPOP test
 QUEUE COUNT #NAME 
 QUEUE COUNT test
 ```
-5 获取一个队列的状态<br>
+6 获取一个队列的状态<br>
 ```c
 QUEUE STATUS #NAME 
 QUEUE STATUS test
