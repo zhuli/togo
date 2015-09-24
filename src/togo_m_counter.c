@@ -1,5 +1,5 @@
 /*
- * togo_m_count.c
+ * togo_m_counter.c
  *
  *  Created on: 2015-9-9
  *      Author: zhuli
@@ -8,11 +8,11 @@
 #include "togo.h"
 #include "togo_load.h"
 
-static TOGO_M_COUNT * togo_m_count_item(u_char * name);
-static void togo_m_count_send(TOGO_THREAD_ITEM *socket_item,
-		TOGO_M_COUNT * item);
+static TOGO_M_COUNTER * togo_m_counter_item(u_char * name);
+static void togo_m_counter_send(TOGO_THREAD_ITEM *socket_item,
+		TOGO_M_COUNTER * item);
 
-BOOL togo_m_count_command(TOGO_COMMAND_TAG command_tag[],
+BOOL togo_m_counter_command(TOGO_COMMAND_TAG command_tag[],
 		TOGO_THREAD_ITEM *socket_item, int ntag)
 {
 	BOOL ret = FALSE;
@@ -47,165 +47,165 @@ BOOL togo_m_count_command(TOGO_COMMAND_TAG command_tag[],
 	}
 
 	if (togo_strcmp(action, "PLUS") == 0) {
-		ret = togo_m_count_plus(cname, step, socket_item);
+		ret = togo_m_counter_plus(cname, step, socket_item);
 
 	} else if (togo_strcmp(action, "MINUS") == 0) {
-		ret = togo_m_count_minus(cname, step, socket_item);
+		ret = togo_m_counter_minus(cname, step, socket_item);
 
 	} else if (togo_strcmp(action, "GET") == 0) {
-		ret = togo_m_count_get(cname, socket_item);
+		ret = togo_m_counter_get(cname, socket_item);
 
 	} else if (togo_strcmp(action, "RESET") == 0) {
-		ret = togo_m_count_reset(cname, socket_item);
+		ret = togo_m_counter_reset(cname, socket_item);
 
 	}
 
 	return ret;
 }
 
-void togo_m_count_init(void)
+void togo_m_counter_init(void)
 {
-	togo_m_count_pool = togo_pool_create(TOGO_M_QUEUE_POOL_SIZE);
-	if (togo_m_count_pool == NULL) {
+	togo_m_counter_pool = togo_pool_create(TOGO_M_QUEUE_POOL_SIZE);
+	if (togo_m_counter_pool == NULL) {
 		togo_log(ERROR, "Initialize modules_count's pool fail.");
 		togo_exit();
 	}
 
-	togo_m_count_hashtable = togo_hashtable_init(togo_m_count_pool);
-	if (togo_m_count_hashtable == NULL) {
+	togo_m_counter_hashtable = togo_hashtable_init(togo_m_counter_pool);
+	if (togo_m_counter_hashtable == NULL) {
 		togo_log(ERROR, "Initialize modules_count's count fail.");
 		togo_exit();
 	}
 
-	pthread_mutex_init(&togo_m_count_glock, NULL);
+	pthread_mutex_init(&togo_m_counter_glock, NULL);
 }
 
-BOOL togo_m_count_plus(u_char * name, int32_t step,
+BOOL togo_m_counter_plus(u_char * name, int32_t step,
 		TOGO_THREAD_ITEM *socket_item)
 {
-	TOGO_M_COUNT * item;
+	TOGO_M_COUNTER * item;
 
-	item = togo_m_count_item(name);
+	item = togo_m_counter_item(name);
 	if (item == NULL) {
 		return FALSE;
 	}
 	pthread_mutex_lock(&item->lock);
 
 	item->count += step;
-	togo_m_count_send(socket_item, item);
+	togo_m_counter_send(socket_item, item);
 
 	pthread_mutex_unlock(&item->lock);
 
 	return TRUE;
 }
 
-BOOL togo_m_count_minus(u_char * name, int32_t step,
+BOOL togo_m_counter_minus(u_char * name, int32_t step,
 		TOGO_THREAD_ITEM *socket_item)
 {
-	TOGO_M_COUNT * item;
+	TOGO_M_COUNTER * item;
 
-	item = togo_m_count_item(name);
+	item = togo_m_counter_item(name);
 	if (item == NULL) {
 		return FALSE;
 	}
 	pthread_mutex_lock(&item->lock);
 
 	item->count -= step;
-	togo_m_count_send(socket_item, item);
+	togo_m_counter_send(socket_item, item);
 
 	pthread_mutex_unlock(&item->lock);
 
 	return TRUE;
 }
 
-BOOL togo_m_count_get(u_char * name, TOGO_THREAD_ITEM *socket_item)
+BOOL togo_m_counter_get(u_char * name, TOGO_THREAD_ITEM *socket_item)
 {
-	TOGO_M_COUNT * item;
+	TOGO_M_COUNTER * item;
 
-	item = togo_m_count_item(name);
+	item = togo_m_counter_item(name);
 	if (item == NULL) {
 		return FALSE;
 	}
 	pthread_mutex_lock(&item->lock);
 
-	togo_m_count_send(socket_item, item);
+	togo_m_counter_send(socket_item, item);
 
 	pthread_mutex_unlock(&item->lock);
 
 	return TRUE;
 }
 
-BOOL togo_m_count_reset(u_char * name, TOGO_THREAD_ITEM *socket_item) {
-	TOGO_M_COUNT * item;
+BOOL togo_m_counter_reset(u_char * name, TOGO_THREAD_ITEM *socket_item) {
+	TOGO_M_COUNTER * item;
 
-	item = togo_m_count_item(name);
+	item = togo_m_counter_item(name);
 	if (item == NULL) {
 		return FALSE;
 	}
 	pthread_mutex_lock(&item->lock);
 	item->count = 0;
-	togo_m_count_send(socket_item, item);
+	togo_m_counter_send(socket_item, item);
 
 	pthread_mutex_unlock(&item->lock);
 
 	return TRUE;
 }
 
-static void togo_m_count_send(TOGO_THREAD_ITEM *socket_item,
-		TOGO_M_COUNT * item)
+static void togo_m_counter_send(TOGO_THREAD_ITEM *socket_item,
+		TOGO_M_COUNTER * item)
 {
 	char str[20];
 	togo_itoa(item->count, str, 10);
 	togo_send_data(socket_item, str, togo_strlen(str));
 }
 
-static TOGO_M_COUNT * togo_m_count_item(u_char * name)
+static TOGO_M_COUNTER * togo_m_counter_item(u_char * name)
 {
 	TOGO_HASHTABLE_ITEM * hash_item;
-	TOGO_M_COUNT * item;
+	TOGO_M_COUNTER * item;
 
-	hash_item = togo_hashtable_get(togo_m_count_hashtable, name);
+	hash_item = togo_hashtable_get(togo_m_counter_hashtable, name);
 
 	if (hash_item == NULL) {
 		/* if does not find a count item, we need to create a new queue!*/
-		pthread_mutex_lock(&togo_m_count_glock);
+		pthread_mutex_lock(&togo_m_counter_glock);
 
-		hash_item = togo_hashtable_get(togo_m_count_hashtable, name);
+		hash_item = togo_hashtable_get(togo_m_counter_hashtable, name);
 		if (hash_item == NULL) {
-			item = (TOGO_M_COUNT *) togo_pool_calloc(togo_m_count_pool,
-					sizeof(TOGO_M_COUNT));
+			item = (TOGO_M_COUNTER *) togo_pool_calloc(togo_m_counter_pool,
+					sizeof(TOGO_M_COUNTER));
 			if (item == NULL) {
-				pthread_mutex_unlock(&togo_m_count_glock);
+				pthread_mutex_unlock(&togo_m_counter_glock);
 				return NULL;
 			}
 
-			u_char * buf = (u_char *) togo_pool_alloc(togo_m_count_pool,
+			u_char * buf = (u_char *) togo_pool_alloc(togo_m_counter_pool,
 					togo_pool_strlen(name));
 			if (buf == NULL) {
-				pthread_mutex_unlock(&togo_m_count_glock);
+				pthread_mutex_unlock(&togo_m_counter_glock);
 				return NULL;
 			}
 			togo_strcpy(buf, name);
 
 			pthread_mutex_init(&item->lock, NULL);
-			item->pool = togo_m_count_pool;
+			item->pool = togo_m_counter_pool;
 			item->name = buf;
 			item->count = 0;
 			item->clear = FALSE;
 
-			BOOL ret = togo_hashtable_add(togo_m_count_hashtable, item->name,
+			BOOL ret = togo_hashtable_add(togo_m_counter_hashtable, item->name,
 					(void *) item);
 			if (ret == FALSE) {
-				pthread_mutex_unlock(&togo_m_count_glock);
+				pthread_mutex_unlock(&togo_m_counter_glock);
 				return NULL;
 			}
 
-			hash_item = togo_hashtable_get(togo_m_count_hashtable, name);
+			hash_item = togo_hashtable_get(togo_m_counter_hashtable, name);
 		}
 
-		pthread_mutex_unlock(&togo_m_count_glock);
+		pthread_mutex_unlock(&togo_m_counter_glock);
 	}
 
-	item = (TOGO_M_COUNT *) hash_item->p;
+	item = (TOGO_M_COUNTER *) hash_item->p;
 	return item;
 }

@@ -31,7 +31,7 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 		/* module Count */
 	} else if (strcmp(command_tag[0].value, "COUNTER") == 0) {
 
-		ret = togo_m_count_command(command_tag, socket_item, ntag);
+		ret = togo_m_counter_command(command_tag, socket_item, ntag);
 	}
 
 	/* If fail, We will return "TOGO_FAIL"! */

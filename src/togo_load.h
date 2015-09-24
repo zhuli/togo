@@ -21,7 +21,7 @@
 #include "togo_server.h"
 #include "togo_command.h"
 #include "togo_m_queue.h"
-#include "togo_m_count.h"
+#include "togo_m_counter.h"
 #include "togo_dispatcher.h"
 
 /* Global variable */
