@@ -32,6 +32,8 @@ struct togo_string {
 
 TOGO_STRING * togo_string_init(TOGO_POOL * pool, size_t size);
 void togo_string_append(TOGO_STRING ** togo_str, u_char * str, size_t len);
+void togo_string_append_i(TOGO_STRING ** togo_str, uint32_t val);
+void togo_string_append_s(TOGO_STRING ** togo_str, u_char * str);
 void togo_string_destroy(TOGO_STRING * togo_str);
 
 

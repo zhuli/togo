@@ -79,18 +79,18 @@ static void togo_wt_destroy_socket(struct bufferevent *bev,
 		TOGO_THREAD_ITEM * socket_item);
 
 /**
- * Initialize a Togo queue.
+ * Initialize a socket queue.
  */
 static void togo_q_init(TOGO_WORKER_THREAD *worker_thread);
 
 /**
- * Push a socket_item into Togo queue.
+ * Push a socket_item into socket queue.
  */
 static void togo_q_push(TOGO_WORKER_THREAD *worker_thread,
 		TOGO_THREAD_ITEM *socket_item);
 
 /**
- * Pop a socket_item from Togo queue.
+ * Pop a socket_item from socket queue.
  */
 static TOGO_THREAD_ITEM * togo_q_pop(TOGO_WORKER_THREAD *worker_thread);
 
@@ -105,6 +105,10 @@ static void togo_mt_init()
 {
 	togo_thread_flist = (TOGO_THREAD_FLIST *) togo_pool_calloc(togo_global_pool,
 			sizeof(TOGO_THREAD_FLIST));
+	if (togo_thread_flist == NULL) {
+		togo_log(ERROR, "Initialize togo_thread_flist error.");
+	}
+
 	togo_thread_flist->next = NULL;
 	togo_thread_flist->total = 0;
 	pthread_mutex_init(&togo_thread_flist->lock, NULL);

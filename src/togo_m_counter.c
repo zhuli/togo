@@ -65,15 +65,15 @@ BOOL togo_m_counter_command(TOGO_COMMAND_TAG command_tag[],
 
 void togo_m_counter_init(void)
 {
-	togo_m_counter_pool = togo_pool_create(TOGO_M_QUEUE_POOL_SIZE);
+	togo_m_counter_pool = togo_pool_create(TOGO_M_COUNTER_POOL_SIZE);
 	if (togo_m_counter_pool == NULL) {
-		togo_log(ERROR, "Initialize modules_count's pool fail.");
+		togo_log(ERROR, "Initialize modules_counter's pool fail.");
 		togo_exit();
 	}
 
 	togo_m_counter_hashtable = togo_hashtable_init(togo_m_counter_pool);
 	if (togo_m_counter_hashtable == NULL) {
-		togo_log(ERROR, "Initialize modules_count's count fail.");
+		togo_log(ERROR, "Initialize modules_counter's hashtable fail.");
 		togo_exit();
 	}
 

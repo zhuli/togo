@@ -23,15 +23,35 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 	if (ntag < 3 || command_tag[0].value == NULL) {
 		ret = FALSE;
 
-		/* module Queue */
 	} else if (strcmp(command_tag[0].value, "QUEUE") == 0) {
 
+		/**
+		 * command_tag[0] : Module  QUEUE
+		 * command_tag[1] : Action  RPUSH|LPUSH|LPOP|RPOP|COUNT|STATUS
+		 * command_tag[2] : Object  Queue name
+		 * command_tag[3] : Value   value
+		 * command_tag[4] : Option  priority:1|2|3
+		 */
 		ret = togo_m_queue_command(command_tag, socket_item, ntag);
 
-		/* module Count */
 	} else if (strcmp(command_tag[0].value, "COUNTER") == 0) {
 
+		/**
+		 * command_tag[0] : Module  COUNTER
+		 * command_tag[1] : Action  PLUS|MINUS|GET|RESET
+		 * command_tag[2] : Object  Count name
+		 * command_tag[3] : Step    1  MAX:99999999
+		 */
 		ret = togo_m_counter_command(command_tag, socket_item, ntag);
+
+	} else if (strcmp(command_tag[0].value, "LOCK") == 0) {
+
+		/**
+		 * command_tag[0] : Module  LOCK
+		 * command_tag[1] : Action  LOCK|UNLOCK|STATUS
+		 * command_tag[2] : Object  Count name
+		 */
+		ret = togo_m_lock_command(command_tag, socket_item, ntag);
 	}
 
 	/* If fail, We will return "TOGO_FAIL"! */

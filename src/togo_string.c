@@ -74,6 +74,18 @@ void togo_string_append(TOGO_STRING ** togo_str, u_char * str, size_t len)
 	return;
 }
 
+void togo_string_append_i(TOGO_STRING ** togo_str, uint32_t val) {
+	char int_str[12];
+	togo_itoa(val, int_str, 10);
+	togo_string_append(togo_str, int_str, togo_strlen(int_str));
+	return;
+}
+
+void togo_string_append_s(TOGO_STRING ** togo_str, u_char * str) {
+	togo_string_append(togo_str, str, togo_strlen(str));
+	return;
+}
+
 void togo_string_destroy(TOGO_STRING * togo_str)
 {
 	togo_pool_free_data(togo_str->pool, (void *) togo_str);

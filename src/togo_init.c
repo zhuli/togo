@@ -6,7 +6,6 @@
  */
 #include "togo.h"
 #include "togo_load.h"
-//#include "togo_test.c"
 
 static void togo_argv_init(int argc, char *argv[]);
 static void togo_config_init();
@@ -17,12 +16,10 @@ static void togo_module_init();
 
 void togo_init(int argc, char *argv[])
 {
-	//togo_test();
 	togo_pool_init();
 	togo_argv_init(argc, argv);
 	togo_c_init();
 	togo_daemon_init();
-	togo_hashtable_init(togo_global_pool);
 	togo_module_init();
 	togo_server_init();
 }
@@ -139,11 +136,11 @@ static void togo_daemon_init()
 static void togo_pool_init()
 {
 	togo_global_pool = togo_pool_create(TOGO_POOL_SIZE);
-	togo_m_queue_init();
 }
 
 static void togo_module_init()
 {
 	togo_m_queue_init(); /* Queue module*/
-	togo_m_counter_init(); /* Count module*/
+	togo_m_counter_init(); /* Counter module*/
+	togo_m_lock_init(); /* Lock module*/
 }
