@@ -33,6 +33,7 @@
 #define TOGO_C_PORT "port"
 #define TOGO_C_DAEMON "daemon"
 #define TOGO_C_WTN "worker_thread_num"
+#define TOGO_C_LOG "log_file"
 #define TOGO_C_DEFAULT "conf/togo.conf"
 #define TOGO_C_PATH "../conf/togo.conf"
 
@@ -58,6 +59,7 @@ typedef struct togo_c {
 	int port;
 	int daemon;
 	int worker_thread_num;
+	char * log_file;
 } TOGO_C;
 
 #endif

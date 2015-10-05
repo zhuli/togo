@@ -14,9 +14,11 @@ typedef struct togo_log TOGO_LOG;
 
 struct togo_log {
 	BOOL file_log;
-	FILE * file;
+	u_char * file;
+	pthread_mutex_t lock;
 };
 
-void togo_log_init(char * filename);
+void togo_log_init(u_char * filename);
+void togo_log_write(u_char * str);
 
 #endif /* TOGO_LOG_H_ */

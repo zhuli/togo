@@ -438,15 +438,6 @@ int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
 static void togo_wt_event_cb(struct bufferevent *bev, short event, void *arg)
 {
 	TOGO_THREAD_ITEM * socket_item = (TOGO_THREAD_ITEM *) arg;
-
-	if (event & BEV_EVENT_TIMEOUT) {
-		togo_log(DEBUG, "Timed out. fd = %u", socket_item->sfd);
-	} else if (event & BEV_EVENT_EOF) {
-		togo_log(DEBUG, "Connection closed. fd = %u", socket_item->sfd);
-	} else if (event & BEV_EVENT_ERROR) {
-		togo_log(DEBUG, "Some other error. fd = %u", socket_item->sfd);
-	}
-
 	togo_wt_destroy_socket(bev, socket_item);
 }
 
