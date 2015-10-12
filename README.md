@@ -1,5 +1,33 @@
 #Togo a simple memory tool for Server
 
+安装说明：<br>
+Togo的安装依赖libevent2,所以需要先安装libevent2<br>
+
+```c
+#安装libevent2.0.22
+wget https://sourceforge.net/projects/levent/files/libevent/libevent-2.0/libevent-2.0.22-stable.tar.gz
+chmod -R 755 libevent-2.0.22-stable.tar.gz
+tar -zvxf libevent-2.0.22-stable.tar.gz
+cd libevent-2.0.22-stable
+./configure
+make
+make install
+
+#安装togo
+wget https://github.com/zhuli/togo/raw/master/version/togo-1.0.tar.gz
+tar -zvxf togo-1.0.tar.gz
+cd togo-1.0
+./configure --prefix=/usr/local/togo
+make
+make install
+
+#如果出现./togo: error while loading shared libraries: libevent-2.0.so.5的错误
+#libevent-2.0.so.5拷贝到/lib/或者/lib64/（lib64只有在centos中会有）
+cp /usr/local/lib/libevent-2.0.so.5 /lib64/
+cp /usr/local/lib/libevent-2.0.so.5 /lib/
+
+```
+
 功能：<br>
 1. 提供计数器模块<br>
 2. 提供队列模块<br>
