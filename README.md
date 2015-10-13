@@ -9,7 +9,7 @@ wget https://sourceforge.net/projects/levent/files/libevent/libevent-2.0/libeven
 chmod -R 755 libevent-2.0.22-stable.tar.gz
 tar -zvxf libevent-2.0.22-stable.tar.gz
 cd libevent-2.0.22-stable
-./configure
+./configure --prefix=/usr/
 make
 make install
 
@@ -23,8 +23,7 @@ make install
 
 #如果出现./togo: error while loading shared libraries: libevent-2.0.so.5的错误
 #libevent-2.0.so.5拷贝到/lib/或者/lib64/（lib64只有在centos中会有）
-cp /usr/local/lib/libevent-2.0.so.5 /lib64/
-cp /usr/local/lib/libevent-2.0.so.5 /lib/
+cp /usr/lib/libevent-2.0.so.5 /usr/lib64/
 
 ```
 
