@@ -38,7 +38,7 @@ cp /usr/lib/libevent-2.0.so.5 /usr/lib64/
 
 *获取TOGO版本：<br>
 ```c
-VERSION
+VERSION\r\n
 ```
 
 *计数器模块协议：<br>
