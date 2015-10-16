@@ -25,6 +25,8 @@
 #include <pthread.h>
 #include <event2/buffer.h>
 
+#define TOGO_VERSION "1.0.0"
+
 #define TOGO_C_DEFAULT_IP "localhost"
 #define TOGO_C_DEFAULT_PORT 8787
 #define TOGO_C_DEFAULT_WTN 8

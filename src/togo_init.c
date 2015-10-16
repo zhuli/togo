@@ -47,9 +47,11 @@ static void togo_argv_init(int argc, char *argv[])
 	char * port = NULL;
 	char * daemon = NULL;
 	char * worker_thread_num = NULL;
+	char * log_file = NULL;
 
 	/* Process command-line arguments */
 	while ((oc = getopt(argc, argv, "c:" /* Set configuration file */
+			"l:" /* Set log path */
 			"p:" /* Set Tcp port*/
 			"n:" /* Set the number of worker thread*/
 			"d" /* Set the programs runs in the backgroud */
@@ -58,6 +60,12 @@ static void togo_argv_init(int argc, char *argv[])
 		case 'c':
 			if (optarg != NULL) {
 				config_path = optarg;
+			}
+			break;
+
+		case 'l':
+			if (optarg != NULL) {
+				log_file = optarg;
 			}
 			break;
 
@@ -95,9 +103,11 @@ static void togo_argv_init(int argc, char *argv[])
 	} else {
 		togo_config_init(config_path);
 	}
-
 	if (port != NULL) {
 		togo_set_config(TOGO_C_PORT, port);
+	}
+	if (log_file != NULL) {
+		togo_set_config(TOGO_C_LOG, log_file);
 	}
 	if (daemon != NULL) {
 		togo_set_config(TOGO_C_DAEMON, "1");

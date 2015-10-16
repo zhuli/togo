@@ -22,15 +22,24 @@ make
 make install
 
 #如果出现./togo: error while loading shared libraries: libevent-2.0.so.5的错误
-#libevent-2.0.so.5拷贝到/lib/或者/lib64/（lib64只有在centos中会有）
+#libevent-2.0.so.5拷贝到或者/lib64/（lib64只有在centos中会有）
 cp /usr/lib/libevent-2.0.so.5 /usr/lib64/
+
+#运行togo
+/usr/local/togo/bin/togo -p 8787 -c /usr/local/togo/conf/togo.conf -l /var/log/togo.log
 
 ```
 
 功能：<br>
+0. 获取版本号<br>
 1. 提供计数器模块<br>
 2. 提供队列模块<br>
 3. 内存锁模块<br>
+
+*获取TOGO版本：<br>
+```c
+VERSION
+```
 
 *计数器模块协议：<br>
 1 计数器加上某个数字，默认+1<br>

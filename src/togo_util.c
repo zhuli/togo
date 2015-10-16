@@ -41,6 +41,7 @@ int togo_log(enum log_level level, const u_char *fmt, ...)
 	}
 	len = togo_strlen(x);
 	togo_memcpy(str, x, len);
+
 	time_len = togo_strlen(time_str);
 	togo_memcpy(str + len, time_str, time_len);
 
