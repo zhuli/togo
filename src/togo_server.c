@@ -101,6 +101,14 @@ BOOL togo_server_init()
 	pthread_join(server_main_thread, NULL);
 }
 
+void togo_server_disconnect(TOGO_THREAD_ITEM * socket_item)
+{
+	if (socket_item != NULL && socket_item->bev != NULL) {
+		togo_wt_destroy_socket(socket_item->bev, socket_item);
+	}
+
+}
+
 static void togo_mt_init()
 {
 	togo_thread_flist = (TOGO_THREAD_FLIST *) togo_pool_calloc(togo_global_pool,

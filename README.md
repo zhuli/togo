@@ -31,7 +31,7 @@ cp /usr/lib/libevent-2.0.so.5 /usr/lib64/
 ```
 
 功能：<br>
-0. 获取版本号<br>
+0. 获取版本号和退出<br>
 1. 提供计数器模块<br>
 2. 提供队列模块<br>
 3. 内存锁模块<br>
@@ -39,6 +39,10 @@ cp /usr/lib/libevent-2.0.so.5 /usr/lib64/
 *获取TOGO版本：<br>
 ```c
 VERSION\r\n
+```
+*断开连接：<br>
+```c
+QUIT\r\n
 ```
 
 *计数器模块协议：<br>

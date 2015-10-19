@@ -81,5 +81,6 @@ TOGO_WORKER_THREAD * togo_worker_threads;
  * Run The Togo Tcp Server!
  */
 BOOL togo_server_init(void);
+void togo_server_disconnect(TOGO_THREAD_ITEM * socket_item);
 
 #endif

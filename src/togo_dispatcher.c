@@ -18,6 +18,10 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 		togo_send_data(socket_item, TOGO_VERSION, togo_strlen(TOGO_VERSION));
 		ret = TRUE;
 
+	} else if (strcmp(command_tag[0].value, "QUIT") == 0) {
+
+		togo_server_disconnect(socket_item);
+		ret = TRUE;
 	} else {
 
 		/**
