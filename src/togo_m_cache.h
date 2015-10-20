@@ -8,7 +8,6 @@
 #ifndef TOGO_M_CACHE_H_
 #define TOGO_M_CACHE_H_
 
-
 #define TOGO_M_CACHE_BUCKET_SIZE (1024 * 1024)
 #define TOGO_M_CACHE_BUCKET_MAX_SIZE (TOGO_M_CACHE_BUCKET_SIZE * 1024)
 #define TOGO_M_CACHE_ITEM_START 32
@@ -70,5 +69,13 @@ struct togo_m_cache_item {
 
 	TOGO_M_CACHE_AREA * area;
 };
+
+BOOL togo_m_cache_command(TOGO_COMMAND_TAG command_tag[],
+		TOGO_THREAD_ITEM *socket_item, int ntag);
+void togo_m_cache_init(void);
+
+TOGO_POOL * togo_m_cache_pool;
+TOGO_HASHTABLE * togo_m_cache_hashtable;
+TOGO_M_CACHE * togo_m_cache;
 
 #endif /* TOGO_M_CACHE_H_ */
