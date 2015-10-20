@@ -16,9 +16,9 @@ struct togo_m_lock {
 	u_char * name;
 	pthread_mutex_t lock;
 	BOOL locked;
-	uint32_t total;
-	uint32_t total_lock;
-	uint32_t total_unlock;
+	uint64_t total;
+	uint64_t total_lock;
+	uint64_t total_unlock;
 	TOGO_POOL * pool;
 };
 
