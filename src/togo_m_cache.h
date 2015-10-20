@@ -62,7 +62,6 @@ struct togo_m_cache_item {
 	size_t klen;
 	size_t vlen;
 	uint32_t expires;
-	BOOL use_lru; /* If not use lru, This item can't be deleted by running the lru*/
 
 	TOGO_M_CACHE_ITEM * prev;
 	TOGO_M_CACHE_ITEM * next;
