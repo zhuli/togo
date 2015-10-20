@@ -180,7 +180,6 @@ void * togo_pool_alloc(TOGO_POOL * pool, size_t size)
 
 		} while (block);
 
-
 		/* Create a new block */
 		p = togo_pool_alloc_block(pool, size);
 		pthread_mutex_unlock(&pool->mlock);
@@ -390,7 +389,7 @@ static void * togo_pool_alloc_large(TOGO_POOL * pool, size_t size)
 	}
 	togo_memzero(new_large, sizeof(TOGO_POOL_LARGE));
 
-	p = (u_char *) new_large + sizeof(TOGO_POOL_LARGE);
+	p = (void *) new_large + sizeof(TOGO_POOL_LARGE);
 
 	new_large->size = size;
 	new_large->p = p;
