@@ -12,7 +12,7 @@
 #define TOGO_M_CACHE_BUCKET_SIZE (1024 * 1024)
 #define TOGO_M_CACHE_BUCKET_MAX_SIZE (TOGO_M_CACHE_BUCKET_SIZE * 1024)
 #define TOGO_M_CACHE_ITEM_START 32
-#define TOGO_M_CACHE_ITEM_POWER 1.5
+#define TOGO_M_CACHE_ITEM_POWER 1.25
 
 typedef struct togo_m_cache TOGO_M_CACHE;
 typedef struct togo_m_cache_area TOGO_M_CACHE_AREA;
@@ -23,6 +23,7 @@ typedef struct togo_m_cache_item TOGO_M_CACHE_ITEM;
 
 struct togo_m_cache {
 	TOGO_M_CACHE_AREA * area;
+	uint32_t total_area;
 	uint32_t total_size;
 	uint64_t total_hit;
 	uint64_t total_write;
@@ -50,6 +51,8 @@ struct togo_m_cache_area {
 	uint32_t used_item;
 	uint32_t free_item;
 	pthread_mutex_t lock;
+
+	TOGO_M_CACHE_AREA * next;
 
 };
 
