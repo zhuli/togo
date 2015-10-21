@@ -119,30 +119,33 @@ static void togo_argv_init(int argc, char *argv[])
 
 static void togo_c_init()
 {
+	togo_global_c = (TOGO_C *) togo_pool_calloc(togo_global_pool,
+			sizeof(TOGO_C));
+
 	u_char * version = togo_get_config(TOGO_C_VERSION);
-	togo_global_c.version = version;
+	togo_global_c->version = version;
 
 	u_char * ip = togo_get_config(TOGO_C_IP);
-	togo_global_c.ip = ip;
+	togo_global_c->ip = ip;
 
 	int port = togo_get_config_to_number(TOGO_C_PORT, TOGO_C_DEFAULT_PORT);
-	togo_global_c.port = port;
+	togo_global_c->port = port;
 
 	int daemon = togo_get_config_to_number(TOGO_C_DAEMON, TRUE);
-	togo_global_c.daemon = daemon;
+	togo_global_c->daemon = daemon;
 
 	int worker_thread_num = togo_get_config_to_number(TOGO_C_WTN,
 			TOGO_C_DEFAULT_WTN);
-	togo_global_c.worker_thread_num = worker_thread_num;
+	togo_global_c->worker_thread_num = worker_thread_num;
 
 	u_char * log_file = togo_get_config(TOGO_C_LOG);
-	togo_global_c.log_file = log_file;
-	togo_log_init(togo_global_c.log_file); //Init log
+	togo_global_c->log_file = log_file;
+	togo_log_init(togo_global_c->log_file); //Init log
 }
 
 static void togo_daemon_init()
 {
-	if (togo_global_c.daemon == TRUE) {
+	if (togo_global_c->daemon == TRUE) {
 		daemon(1, 1);
 	}
 }
