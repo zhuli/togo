@@ -144,6 +144,7 @@ static TOGO_M_LOCK * togo_m_lock_item(u_char * name)
 {
 	TOGO_HASHTABLE_ITEM * hash_item;
 	TOGO_M_LOCK * item;
+	uint32_t klen;
 
 	hash_item = togo_hashtable_get(togo_m_lock_hashtable, name);
 
@@ -160,13 +161,15 @@ static TOGO_M_LOCK * togo_m_lock_item(u_char * name)
 				return NULL;
 			}
 
+			klen = togo_strlen(name);
 			u_char * buf = (u_char *) togo_pool_alloc(togo_m_lock_pool,
-					togo_pool_strlen(name));
+					klen + 1);
 			if (buf == NULL) {
 				pthread_mutex_unlock(&togo_m_lock_glock);
 				return NULL;
 			}
-			togo_strcpy(buf, name);
+			togo_memcpy(buf, name, klen);
+			*(buf + klen + 1) = '\0';
 
 			pthread_mutex_init(&item->lock, NULL);
 			item->pool = togo_m_lock_pool;

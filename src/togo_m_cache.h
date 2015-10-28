@@ -19,8 +19,8 @@ typedef struct togo_m_cache TOGO_M_CACHE;
 typedef struct togo_m_cache_area TOGO_M_CACHE_AREA;
 typedef struct togo_m_cache_chunk TOGO_M_CACHE_CHUNK;
 typedef struct togo_m_cache_item TOGO_M_CACHE_ITEM;
-#define togo_m_cache_bucket_size() \
-	(TOGO_M_CACHE_BUCKET_SIZE + sizeof(TOGO_M_CACHE_BUCKET))
+#define togo_m_cache_item_size(a, b) \
+		(a + 1 + b  + sizeof(TOGO_M_CACHE_ITEM))
 
 struct togo_m_cache {
 	TOGO_M_CACHE_AREA * area;
@@ -45,8 +45,8 @@ struct togo_m_cache_area {
 	TOGO_M_CACHE_CHUNK * chunk_list;
 	TOGO_M_CACHE_CHUNK * chunk_curr;
 
-	uint32_t curr;
-	uint32_t chunk_item_size;
+	uint32_t chunk_item_curr;
+	uint32_t chunk_item_num;
 	uint32_t total_size;
 	uint32_t total_chunk;
 	uint32_t total_item;
@@ -59,13 +59,13 @@ struct togo_m_cache_chunk {
 	TOGO_M_CACHE_CHUNK * next;
 	TOGO_M_CACHE_CHUNK * prev;
 	TOGO_M_CACHE_AREA * area;
-	u_char *  p;
+	u_char * p;
 };
 
 struct togo_m_cache_item {
-	size_t klen;
-	size_t vlen;
-	uint32_t expires;
+	uint32_t klen;
+	uint32_t vlen;
+	uint64_t expires;
 
 	TOGO_M_CACHE_ITEM * prev;
 	TOGO_M_CACHE_ITEM * next;
@@ -75,6 +75,8 @@ struct togo_m_cache_item {
 BOOL togo_m_cache_command(TOGO_COMMAND_TAG command_tag[],
 		TOGO_THREAD_ITEM *socket_item, int ntag);
 void togo_m_cache_init(void);
+BOOL togo_m_cache_set(TOGO_THREAD_ITEM * socket_item, u_char * key,
+		uint32_t expires, uint32_t vlen);
 
 TOGO_POOL * togo_m_cache_pool;
 TOGO_HASHTABLE * togo_m_cache_hashtable;
