@@ -23,13 +23,13 @@ void togo_m_cache_init(void)
 	togo_m_cache_pool = togo_pool_create(TOGO_M_COUNTER_POOL_SIZE);
 
 	if (togo_m_cache_pool == NULL) {
-		togo_log(ERROR, "Initialize modules_cache's pool fail.");
+		togo_log(ERROR, "Initialize modules_cache's POOL fail.");
 		togo_exit();
 	}
 
 	togo_m_cache_hashtable = togo_hashtable_init(togo_m_cache_pool);
 	if (togo_m_cache_hashtable == NULL) {
-		togo_log(ERROR, "Initialize modules_cache's hashtable fail.");
+		togo_log(ERROR, "Initialize modules_cache's HASHTABLE fail.");
 		togo_exit();
 	}
 
@@ -100,6 +100,7 @@ static void togo_m_cache_init_area(uint32_t msize, uint32_t i,
 
 	chunk = togo_m_cache_create_chunk(curr_area);
 	if (chunk == NULL) {
+		togo_log(INFO, "Initialize modules_cache's TOGO_M_CACHE_CHUNK fail.");
 		togo_exit();
 	}
 	chunk_item_size = TOGO_M_CACHE_CHUNK_SIZE / msize;
@@ -131,14 +132,14 @@ static TOGO_M_CACHE_CHUNK * togo_m_cache_create_chunk(TOGO_M_CACHE_AREA * area)
 	bucket = (TOGO_M_CACHE_CHUNK *) togo_pool_calloc(togo_m_cache_pool,
 			sizeof(TOGO_M_CACHE_CHUNK));
 	if (bucket == NULL) {
-		togo_log(INFO, "Initialize modules_cache's TOGO_M_CACHE_CHUNK fail.");
+		togo_log(INFO, "create modules_cache's chunk fail.");
 		return NULL;
 	}
 
 	p = (u_char *) togo_pool_alloc(togo_m_cache_pool,
 			sizeof(u_char) * TOGO_M_CACHE_CHUNK_SIZE);
 	if (p == NULL) {
-		togo_log(INFO, "Initialize modules_cache's TOGO_M_CACHE_CHUNK fail.");
+		togo_log(INFO, "create modules_cache's chunk fail.");
 		return NULL;
 	}
 
