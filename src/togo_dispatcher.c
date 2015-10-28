@@ -13,12 +13,12 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 {
 	BOOL ret = FALSE;
 
-	if (strcmp(command_tag[0].value, "VERSION") == 0) {
+	if (togo_strcmp(command_tag[0].value, "VERSION") == 0) {
 
 		togo_send_data(socket_item, TOGO_VERSION, togo_strlen(TOGO_VERSION));
 		ret = TRUE;
 
-	} else if (strcmp(command_tag[0].value, "QUIT") == 0) {
+	} else if (togo_strcmp(command_tag[0].value, "QUIT") == 0) {
 
 		togo_server_disconnect(socket_item);
 		ret = TRUE;
@@ -34,7 +34,7 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 		if (ntag < 3 || command_tag[0].value == NULL) {
 			ret = FALSE;
 
-		} else if (strcmp(command_tag[0].value, "QUEUE") == 0) {
+		} else if (togo_strcmp(command_tag[0].value, "QUEUE") == 0) {
 
 			/**
 			 * command_tag[0] : Module  QUEUE
@@ -45,7 +45,7 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 			 */
 			ret = togo_m_queue_command(command_tag, socket_item, ntag);
 
-		} else if (strcmp(command_tag[0].value, "COUNTER") == 0) {
+		} else if (togo_strcmp(command_tag[0].value, "COUNTER") == 0) {
 
 			/**
 			 * command_tag[0] : Module  COUNTER
@@ -55,7 +55,7 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 			 */
 			ret = togo_m_counter_command(command_tag, socket_item, ntag);
 
-		} else if (strcmp(command_tag[0].value, "LOCK") == 0) {
+		} else if (togo_strcmp(command_tag[0].value, "LOCK") == 0) {
 
 			/**
 			 * command_tag[0] : Module  LOCK

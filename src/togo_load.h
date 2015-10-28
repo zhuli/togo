@@ -23,6 +23,7 @@
 #include "togo_m_queue.h"
 #include "togo_m_counter.h"
 #include "togo_m_lock.h"
+#include "togo_m_cache.h"
 #include "togo_dispatcher.h"
 
 /* Global variable */

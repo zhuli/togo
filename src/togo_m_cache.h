@@ -9,20 +9,23 @@
 #define TOGO_M_CACHE_H_
 
 #define TOGO_M_COUNTER_POOL_SIZE (1024 * 1024)
-#define TOGO_M_CACHE_BUCKET_SIZE (1024 * 1024)
-#define TOGO_M_CACHE_BUCKET_MAX_SIZE (TOGO_M_CACHE_BUCKET_SIZE * 1024)
+#define TOGO_M_CACHE_CHUNK_SIZE (1024 * 1024)
+#define TOGO_M_CACHE_MAX_SIZE (TOGO_M_CACHE_CHUNK_SIZE * 1024)
 #define TOGO_M_CACHE_ITEM_START 32
-#define TOGO_M_CACHE_ITEM_POWER 1.25
+#define TOGO_M_CACHE_ITEM_POWER 1.15
+#define TOGO_M_CACHE_AREA_TABLE_DEFAULT_SIZE 120
 
 typedef struct togo_m_cache TOGO_M_CACHE;
 typedef struct togo_m_cache_area TOGO_M_CACHE_AREA;
-typedef struct togo_m_cache_bucket TOGO_M_CACHE_BUCKET;
+typedef struct togo_m_cache_chunk TOGO_M_CACHE_CHUNK;
 typedef struct togo_m_cache_item TOGO_M_CACHE_ITEM;
 #define togo_m_cache_bucket_size() \
 	(TOGO_M_CACHE_BUCKET_SIZE + sizeof(TOGO_M_CACHE_BUCKET))
 
 struct togo_m_cache {
 	TOGO_M_CACHE_AREA * area;
+	uint32_t * area_table;
+
 	uint32_t total_area;
 	uint32_t total_size;
 	uint64_t total_hit;
@@ -34,32 +37,29 @@ struct togo_m_cache {
 };
 
 struct togo_m_cache_area {
-	size_t start;
-	size_t len;
+	uint32_t msize;
 
 	TOGO_M_CACHE_ITEM * lru_head;
 	TOGO_M_CACHE_ITEM * lru_tail;
 	TOGO_M_CACHE_ITEM * free_list;
-
-	TOGO_M_CACHE_BUCKET * bucket_list;
-	TOGO_M_CACHE_BUCKET * bucket_curr;
+	TOGO_M_CACHE_CHUNK * chunk_list;
+	TOGO_M_CACHE_CHUNK * chunk_curr;
 
 	uint32_t curr;
+	uint32_t chunk_item_size;
 	uint32_t total_size;
-	uint32_t total_bucket;
+	uint32_t total_chunk;
 	uint32_t total_item;
 	uint32_t used_item;
 	uint32_t free_item;
 	pthread_mutex_t lock;
-
-	TOGO_M_CACHE_AREA * next;
-
 };
 
-struct togo_m_cache_bucket {
-	TOGO_M_CACHE_BUCKET * next;
-	TOGO_M_CACHE_BUCKET * prev;
+struct togo_m_cache_chunk {
+	TOGO_M_CACHE_CHUNK * next;
+	TOGO_M_CACHE_CHUNK * prev;
 	TOGO_M_CACHE_AREA * area;
+	u_char *  p;
 };
 
 struct togo_m_cache_item {
@@ -69,7 +69,6 @@ struct togo_m_cache_item {
 
 	TOGO_M_CACHE_ITEM * prev;
 	TOGO_M_CACHE_ITEM * next;
-
 	TOGO_M_CACHE_AREA * area;
 };
 

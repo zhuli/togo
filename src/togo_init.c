@@ -160,4 +160,5 @@ static void togo_module_init()
 	togo_m_queue_init(); /* Queue module*/
 	togo_m_counter_init(); /* Counter module*/
 	togo_m_lock_init(); /* Lock module*/
+	togo_m_cache_init(); /* Cache module*/
 }
