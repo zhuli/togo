@@ -21,7 +21,6 @@ void togo_m_cache_init(void)
 	TOGO_M_CACHE_AREA * area;
 
 	togo_m_cache_pool = togo_pool_create(TOGO_M_COUNTER_POOL_SIZE);
-
 	if (togo_m_cache_pool == NULL) {
 		togo_log(ERROR, "Initialize modules_cache's POOL fail.");
 		togo_exit();
