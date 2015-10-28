@@ -128,6 +128,8 @@ BOOL togo_m_cache_set(TOGO_THREAD_ITEM * socket_item, u_char * key,
 		new_key = togo_m_cache_create_item(socket_item, item, area, klen, vlen,
 				key, expires);
 
+		area->chunk_item_curr++;
+
 	} else {
 
 		if (area->free_list != NULL) {
@@ -318,7 +320,6 @@ static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 	new_val = nbsp + 1;
 	togo_memcpy(new_key, key, klen);
 
-	area->chunk_item_curr++;
 	area->total_item++;
 	area->used_item++;
 	area->free_item--;
