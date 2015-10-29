@@ -16,7 +16,9 @@
 #define TOGO_SBUF_FAIL "TOGO_FAIL"
 #define TOGO_SBUF_NULL "TOGO_NULL"
 #define TOGO_SBUF_COMMAND_TOO_BIG "TOGO_COMMAND_TOO_BIG"
-#define TOGO_SBUF_TOO_BIG "TOO_BIG"
+#define TOGO_SBUF_TOO_BIG "TOGO_TOO_BIG"
+#define TOGO_SBUF_EXIST "TOGO_EXIST"
+#define TOGO_SBUF_NOT_EXIST "TOGO_NOT_EXIST"
 
 #define togo_send_data togo_command_build_send
 #define togo_send_fail togo_command_build_send_fail

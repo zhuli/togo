@@ -16,7 +16,10 @@ static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 		uint32_t vlen, u_char * key, uint32_t expires);
 static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
 		uint32_t total);
+static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
+		uint32_t expires, uint32_t vlen);
 static void togo_m_cache_set_cb(TOGO_THREAD_ITEM * socket_item);
+static void togo_m_cache_delete_comm(TOGO_M_CACHE_ITEM * item);
 static int tries = 4;
 
 void togo_m_cache_init(void)
@@ -96,141 +99,83 @@ void togo_m_cache_init(void)
 BOOL togo_m_cache_set(TOGO_THREAD_ITEM * socket_item, u_char * key,
 		uint32_t expires, uint32_t vlen)
 {
-	uint32_t klen, item_size, area_id, i, this_time;
-	TOGO_M_CACHE_AREA * area;
 	TOGO_M_CACHE_ITEM * item;
-	TOGO_M_CACHE_CHUNK * chunk;
-	TOGO_M_CACHE_ITEM * temp;
-	u_char * new_key;
+	TOGO_HASHTABLE_ITEM * hitem;
 
-	klen = togo_strlen(key);
-	if (klen == 0 || vlen == 0 || togo_m_cache->area == NULL) {
-		return FALSE;
+	hitem = togo_hashtable_get(togo_m_cache_hashtable, key);
+	if (hitem != NULL) {
+		item = (TOGO_M_CACHE_ITEM *) hitem->p;
+		togo_m_cache_delete_comm(item);
 	}
 
-	item_size = togo_m_cache_item_size(klen, vlen);
-	area_id = togo_m_cache_area_search(togo_m_cache->area_table, item_size,
-			togo_m_cache->total_area);
-	if (area_id == -1) {
-		return FALSE;
+	return togo_m_cache_set_comm(socket_item, key, expires, vlen);
+}
+
+BOOL togo_m_cache_add(TOGO_THREAD_ITEM * socket_item, u_char * key,
+		uint32_t expires, uint32_t vlen)
+{
+	TOGO_M_CACHE_ITEM * item;
+	TOGO_HASHTABLE_ITEM * hitem;
+
+	hitem = togo_hashtable_get(togo_m_cache_hashtable, key);
+	if (hitem != NULL) {
+		item = (TOGO_M_CACHE_ITEM *) hitem->p;
+		if (item->expires == 0 || item->expires > togo_get_time()) {
+			togo_send_data(socket_item, TOGO_SBUF_EXIST,
+					togo_strlen(TOGO_SBUF_EXIST));
+			return TRUE;
+		}
+
+		togo_m_cache_delete_comm(item);
 	}
 
-	area = (TOGO_M_CACHE_AREA *) (togo_m_cache->area + area_id);
+	return togo_m_cache_set_comm(socket_item, key, expires, vlen);
+}
 
-	pthread_mutex_lock(&area->lock);
+BOOL togo_m_cache_replace(TOGO_THREAD_ITEM * socket_item, u_char * key,
+		uint32_t expires, uint32_t vlen)
+{
+	TOGO_M_CACHE_ITEM * item;
+	TOGO_HASHTABLE_ITEM * hitem;
 
-	if (area->chunk_item_curr < area->chunk_item_num) {
+	hitem = togo_hashtable_get(togo_m_cache_hashtable, key);
+	if (hitem == NULL) {
 
-		chunk = area->chunk_curr;
-		item = (TOGO_M_CACHE_ITEM *) (chunk->p
-				+ (area->msize * area->chunk_item_curr));
-
-		new_key = togo_m_cache_create_item(socket_item, item, area, klen, vlen,
-				key, expires);
-
-		area->chunk_item_curr++;
+		togo_send_data(socket_item, TOGO_SBUF_NOT_EXIST,
+				togo_strlen(TOGO_SBUF_NOT_EXIST));
+		return TRUE;
 
 	} else {
 
-		if (area->free_list != NULL) {
-			item = area->free_list;
-			if (area->free_list->next == NULL) {
-				area->free_list = NULL;
-			} else {
-				area->free_list->next->prev = NULL;
-				area->free_list = area->free_list->next;
-			}
+		item = (TOGO_M_CACHE_ITEM *) hitem->p;
+		if (item->expires != 0 && item->expires < togo_get_time()) {
 
-			new_key = togo_m_cache_create_item(socket_item, item, area, klen,
-					vlen, key, expires);
-
-		} else {
-			/* Alloc a new chunk*/
-			pthread_mutex_lock(&togo_m_cache->glock);
-
-			if (togo_m_cache->total_size < TOGO_M_CACHE_MAX_SIZE) {
-
-				chunk = togo_m_cache_create_chunk(area);
-				if (chunk == NULL) {
-					pthread_mutex_unlock(&area->lock);
-					return FALSE;
-				}
-
-				if (area->chunk_list == NULL) {
-					area->chunk_list = chunk;
-				} else {
-					area->chunk_list->prev = chunk;
-					chunk->next = area->chunk_list;
-					area->chunk_list = chunk;
-				}
-				area->chunk_curr = chunk;
-				area->chunk_item_curr = 0;
-
-				area->total_chunk++;
-				area->total_size += TOGO_M_CACHE_CHUNK_SIZE;
-				area->total_item += area->chunk_item_num;
-				area->free_item += area->chunk_item_num;
-
-				pthread_mutex_unlock(&togo_m_cache->glock);
-
-				item = (TOGO_M_CACHE_ITEM *) (chunk->p
-						+ (area->msize * area->chunk_item_curr));
-
-				new_key = togo_m_cache_create_item(socket_item, item, area,
-						klen, vlen, key, expires);
-
-			} else {
-				pthread_mutex_unlock(&togo_m_cache->glock);
-
-				/* LRU */
-				if (area->lru_tail == NULL) {
-					pthread_mutex_unlock(&area->lock);
-					return FALSE;
-				}
-
-				this_time = togo_get_time();
-				item = NULL;
-				temp = area->lru_tail;
-				for (i = 0; i < tries; i++) {
-					if (temp == NULL) {
-						break;
-					}
-					if (temp->expires != 0 && temp->expires < this_time) {
-						break;
-					}
-					temp = temp->prev;
-				}
-				if (temp == NULL || temp->expires == 0
-						|| temp->expires > this_time) {
-					item = (TOGO_M_CACHE_ITEM *) area->lru_tail;
-					area->lru_tail = area->lru_tail->prev;
-				} else {
-					item = temp;
-					if (temp->next != NULL) {
-						temp->next->prev = temp->prev;
-					}
-					if (temp->prev != NULL) {
-						temp->prev->next = temp->next;
-					}
-					if (area->lru_head == temp) {
-						area->lru_head = temp->next;
-					}
-					if (area->lru_tail == temp) {
-						area->lru_tail = temp->prev;
-					}
-				}
-
-				new_key = togo_m_cache_create_item(socket_item, item, area,
-						klen, vlen, key, expires);
-			}
-
+			togo_m_cache_delete_comm(item);
+			togo_send_data(socket_item, TOGO_SBUF_NOT_EXIST,
+					togo_strlen(TOGO_SBUF_NOT_EXIST));
+			return TRUE;
 		}
+		return TRUE;
 	}
 
-	pthread_mutex_unlock(&area->lock);
+	return togo_m_cache_set_comm(socket_item, key, expires, vlen);
+}
 
-	/* HashTable */
-	togo_hashtable_add(togo_m_cache_hashtable, new_key, (void *) item);
+BOOL togo_m_cache_delete(TOGO_THREAD_ITEM * socket_item, u_char * key)
+{
+	TOGO_M_CACHE_ITEM * item;
+	TOGO_HASHTABLE_ITEM * hitem;
+
+	if (hitem == NULL) {
+
+		togo_send_data(socket_item, TOGO_SBUF_NOT_EXIST,
+				togo_strlen(TOGO_SBUF_NOT_EXIST));
+		return TRUE;
+	}
+
+	item = (TOGO_M_CACHE_ITEM *) hitem->p;
+	togo_m_cache_delete_comm(item);
+	return TRUE;
 }
 
 static void togo_m_cache_create_area(uint32_t msize, uint32_t i,
@@ -386,11 +331,200 @@ static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
 	return ret;
 }
 
+static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
+		uint32_t expires, uint32_t vlen)
+{
+	uint32_t klen, item_size, area_id, i, this_time;
+	TOGO_M_CACHE_AREA * area;
+	TOGO_M_CACHE_ITEM * item;
+	TOGO_M_CACHE_CHUNK * chunk;
+	TOGO_M_CACHE_ITEM * temp;
+	u_char * new_key;
+
+	klen = togo_strlen(key);
+	if (klen == 0 || vlen == 0 || togo_m_cache->area == NULL) {
+		return FALSE;
+	}
+
+	item_size = togo_m_cache_item_size(klen, vlen);
+	area_id = togo_m_cache_area_search(togo_m_cache->area_table, item_size,
+			togo_m_cache->total_area);
+	if (area_id == -1) {
+		return FALSE;
+	}
+
+	area = (TOGO_M_CACHE_AREA *) (togo_m_cache->area + area_id);
+
+	pthread_mutex_lock(&area->lock);
+
+	if (area->chunk_item_curr < area->chunk_item_num) {
+
+		chunk = area->chunk_curr;
+		item = (TOGO_M_CACHE_ITEM *) (chunk->p
+				+ (area->msize * area->chunk_item_curr));
+
+		new_key = togo_m_cache_create_item(socket_item, item, area, klen, vlen,
+				key, expires);
+
+		area->chunk_item_curr++;
+
+	} else {
+
+		if (area->free_list != NULL) {
+			item = area->free_list;
+			if (area->free_list->next == NULL) {
+				area->free_list = NULL;
+			} else {
+				area->free_list->next->prev = NULL;
+				area->free_list = area->free_list->next;
+			}
+
+			new_key = togo_m_cache_create_item(socket_item, item, area, klen,
+					vlen, key, expires);
+
+		} else {
+			/* Alloc a new chunk*/
+			pthread_mutex_lock(&togo_m_cache->glock);
+
+			if (togo_m_cache->total_size < TOGO_M_CACHE_MAX_SIZE) {
+
+				chunk = togo_m_cache_create_chunk(area);
+				if (chunk == NULL) {
+					pthread_mutex_unlock(&area->lock);
+					return FALSE;
+				}
+
+				if (area->chunk_list == NULL) {
+					area->chunk_list = chunk;
+				} else {
+					area->chunk_list->prev = chunk;
+					chunk->next = area->chunk_list;
+					area->chunk_list = chunk;
+				}
+				area->chunk_curr = chunk;
+				area->chunk_item_curr = 0;
+
+				area->total_chunk++;
+				area->total_size += TOGO_M_CACHE_CHUNK_SIZE;
+				area->total_item += area->chunk_item_num;
+				area->free_item += area->chunk_item_num;
+
+				pthread_mutex_unlock(&togo_m_cache->glock);
+
+				item = (TOGO_M_CACHE_ITEM *) (chunk->p
+						+ (area->msize * area->chunk_item_curr));
+
+				new_key = togo_m_cache_create_item(socket_item, item, area,
+						klen, vlen, key, expires);
+
+			} else {
+				pthread_mutex_unlock(&togo_m_cache->glock);
+
+				/* LRU */
+				if (area->lru_tail == NULL) {
+					pthread_mutex_unlock(&area->lock);
+					return FALSE;
+				}
+
+				this_time = togo_get_time();
+				item = NULL;
+				temp = area->lru_tail;
+				for (i = 0; i < tries; i++) {
+					if (temp == NULL) {
+						break;
+					}
+					if (temp->expires != 0 && temp->expires < this_time) {
+						break;
+					}
+					temp = temp->prev;
+				}
+				if (temp == NULL || temp->expires == 0
+						|| temp->expires > this_time) {
+					item = (TOGO_M_CACHE_ITEM *) area->lru_tail;
+					area->lru_tail = area->lru_tail->prev;
+				} else {
+					item = temp;
+					if (temp->next != NULL) {
+						temp->next->prev = temp->prev;
+					}
+					if (temp->prev != NULL) {
+						temp->prev->next = temp->next;
+					}
+					if (area->lru_head == temp) {
+						area->lru_head = temp->next;
+					}
+					if (area->lru_tail == temp) {
+						area->lru_tail = temp->prev;
+					}
+				}
+
+				new_key = togo_m_cache_create_item(socket_item, item, area,
+						klen, vlen, key, expires);
+			}
+
+		}
+	}
+
+	pthread_mutex_unlock(&area->lock);
+
+	/* HashTable */
+	togo_hashtable_add(togo_m_cache_hashtable, new_key, (void *) item);
+}
+
 static void togo_m_cache_set_cb(TOGO_THREAD_ITEM * socket_item)
 {
 	TOGO_M_CACHE_ITEM * item;
 
 	item = (TOGO_M_CACHE_ITEM *) socket_item->bparam;
-	item->status = TRUE;
+	item->status = 1;
+}
+
+static void togo_m_cache_delete_comm(TOGO_M_CACHE_ITEM * item)
+{
+	TOGO_M_CACHE_AREA * area;
+
+	if (item == NULL) {
+		return;
+	}
+	area = item->area;
+
+	pthread_mutex_lock(&area->lock);
+	if (item->status == 0) {
+		pthread_mutex_unlock(&area->lock);
+		return;
+	}
+
+	if (item->next != NULL) {
+		item->next->prev = item->prev;
+	}
+	if (item->prev != NULL) {
+		item->prev->next = item->next;
+	}
+	if (area->lru_head == item) {
+		area->lru_head = item->next;
+	}
+	if (area->lru_tail == item) {
+		area->lru_tail = item->prev;
+	}
+
+	if (area->free_list == NULL) {
+		area->free_list = item;
+		item->next = NULL;
+		item->prev = NULL;
+	} else {
+		item->next = area->free_list;
+		area->free_list->prev = item;
+		area->free_list = item;
+	}
+
+	item->vlen = 0;
+	item->klen = 0;
+	item->expires = 0;
+	item->status = 0;
+
+	area->free_item++;
+	area->used_item--;
+
+	pthread_mutex_unlock(&area->lock);
 }
 

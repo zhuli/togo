@@ -137,5 +137,14 @@ TOGO_STOGO_COMMAND_TOO_BIGTOGO_E\r\n
 ```
 5 需要发送/接收的内容太大<br>
 ```c
-TOGO_STOO_BIGTOGO_E\r\n
+TOGO_STOGO_TOO_BIGTOGO_E\r\n
+```
+6 元素已经存在<br>
+```c
+TOGO_STOGO_EXISTTOGO_E\r\n
+```
+
+7 元素不存在<br>
+```c
+TOGO_STOGO_NOT_EXISTTOGO_E\r\n
 ```
