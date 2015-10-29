@@ -230,8 +230,8 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 
 		socket_item->worker_pool = worker_pool;
 		socket_item->rbuf = rbuf;
-		socket_item->sbuf = sbuf;
 		socket_item->rsize = sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE;
+		socket_item->sbuf = sbuf;
 		socket_item->sbuf_size = sizeof(u_char) * TOGO_S_SBUF_INIT_SIZE;
 	}
 
@@ -239,6 +239,21 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 	socket_item->rcurr = socket_item->rbuf;
 	socket_item->rbytes = 0;
 	socket_item->ssize = 0;
+
+	socket_item->rstatus = 0;
+	socket_item->sstatus = 0;
+
+	socket_item->bbuf = NULL;
+	socket_item->bsize = 0;
+	socket_item->bcurr = NULL;
+	socket_item->bparam = NULL;
+	socket_item->bpool = NULL;
+	socket_item->bcb = NULL;
+
+	socket_item->bsparam = NULL;
+	socket_item->bsbuf = NULL;
+	socket_item->bssize = 0;
+	socket_item->bscb = NULL;
 
 	togo_q_push(worker_thread, socket_item);
 
