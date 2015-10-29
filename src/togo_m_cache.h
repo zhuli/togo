@@ -66,6 +66,7 @@ struct togo_m_cache_item {
 	uint32_t klen;
 	uint32_t vlen;
 	uint64_t expires;
+	BOOL status;
 
 	TOGO_M_CACHE_ITEM * prev;
 	TOGO_M_CACHE_ITEM * next;

@@ -185,11 +185,12 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 }
 
 void togo_command_build_read(TOGO_THREAD_ITEM * socket_item, TOGO_POOL * bpool,
-		u_char * buf, size_t len, BDATA_CALLBACK callback)
+		u_char * buf, size_t len, BDATA_CALLBACK callback, void * param)
 {
 	socket_item->sstatus = 1;
 	socket_item->rstatus = 1;
 
+	socket_item->bparam = param;
 	socket_item->bbuf = buf;
 	socket_item->bcb = callback;
 	socket_item->bcurr = buf;
@@ -251,10 +252,11 @@ void togo_command_build_send_null(TOGO_THREAD_ITEM * socket_item)
 }
 
 void togo_command_build_send_dbig(TOGO_THREAD_ITEM * socket_item, u_char * buf,
-		size_t len, BDATA_CALLBACK callback)
+		size_t len, BDATA_CALLBACK callback, void * param)
 {
 	socket_item->sstatus = 3;
 
+	socket_item->bsparam = param;
 	socket_item->bscb = callback;
 	socket_item->bssize = len;
 	socket_item->bsbuf = buf;

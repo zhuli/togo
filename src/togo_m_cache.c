@@ -8,7 +8,7 @@
 #include "togo.h"
 #include "togo_load.h"
 
-static void togo_m_cache_init_area(uint32_t msize, uint32_t i,
+static void togo_m_cache_create_area(uint32_t msize, uint32_t i,
 		TOGO_M_CACHE_AREA * area);
 static TOGO_M_CACHE_CHUNK * togo_m_cache_create_chunk(TOGO_M_CACHE_AREA * area);
 static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
@@ -88,7 +88,7 @@ void togo_m_cache_init(void)
 
 	for (i = 0; i < total_area; i++) {
 		curr = *(area_table + i);
-		togo_m_cache_init_area(curr, i, area);
+		togo_m_cache_create_area(curr, i, area);
 	}
 
 }
@@ -233,7 +233,7 @@ BOOL togo_m_cache_set(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	togo_hashtable_add(togo_m_cache_hashtable, new_key, (void *) item);
 }
 
-static void togo_m_cache_init_area(uint32_t msize, uint32_t i,
+static void togo_m_cache_create_area(uint32_t msize, uint32_t i,
 		TOGO_M_CACHE_AREA * area)
 {
 	TOGO_M_CACHE_AREA * curr_area;
@@ -313,6 +313,7 @@ static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 	item->vlen = vlen;
 	item->next = NULL;
 	item->prev = NULL;
+	item->status = FALSE;
 
 	new_key = (u_char *) item + sizeof(TOGO_M_CACHE_ITEM);
 	nbsp = (u_char *) new_key + klen + 1;
@@ -334,7 +335,7 @@ static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 	}
 
 	togo_read_data(socket_item, togo_m_cache->pool, new_val, vlen,
-			togo_m_cache_set_cb);
+			togo_m_cache_set_cb, (void *) item);
 }
 
 static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
@@ -387,6 +388,9 @@ static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
 
 static void togo_m_cache_set_cb(TOGO_THREAD_ITEM * socket_item)
 {
+	TOGO_M_CACHE_ITEM * item;
 
+	item = (TOGO_M_CACHE_ITEM *) socket_item->bparam;
+	item->status = TRUE;
 }
 

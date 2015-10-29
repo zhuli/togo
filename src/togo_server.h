@@ -41,9 +41,11 @@ struct togo_thread_item {
 	void * bbuf; /* The buffer to read the big data !*/
 	size_t bsize; /* The size of the bbuf */
 	void * bcurr; /* Record the usage of bbuf */
+	void * bparam; /* param */
 	TOGO_POOL * bpool; /* pool */
 	BDATA_CALLBACK bcb; /* The callback function when read the end of the big data*/
 
+	void * bsparam; /* param */
 	void * bsbuf; /* The buffer to send the big data! */
 	size_t bssize; /* The size of the big data buffer!*/
 	BDATA_CALLBACK bscb; /* The callback function when send the end of the big data*/
