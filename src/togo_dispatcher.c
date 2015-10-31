@@ -63,6 +63,18 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 			 * command_tag[2] : Object  Count name
 			 */
 			ret = togo_m_lock_command(command_tag, socket_item, ntag);
+
+		} else if (togo_strcmp(command_tag[0].value, "CACHE") == 0) {
+
+			/**
+			 * command_tag[0] : Module  QUEUE
+			 * command_tag[1] : Action  SET|ADD|REPLACE|DELETE|GET|FLUSH
+			 * command_tag[2] : Key     key
+			 * command_tag[3] : Expires expires time
+			 * command_tag[4] : Vlen    The length of value
+			 */
+			ret = togo_m_cache_command(command_tag, socket_item, ntag);
+
 		}
 	}
 

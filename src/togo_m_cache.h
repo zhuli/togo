@@ -32,6 +32,8 @@ struct togo_m_cache {
 	uint64_t total_write;
 	uint64_t total_read;
 
+	BOOL is_flush;
+
 	pthread_mutex_t glock;
 	TOGO_POOL * pool;
 };
@@ -66,7 +68,7 @@ struct togo_m_cache_item {
 	uint32_t klen;
 	uint32_t vlen;
 	uint64_t expires;
-	uint32_t status; /* 0-free;1-used */
+	uint32_t status; /* 0-free;1-used;*/
 
 	TOGO_M_CACHE_ITEM * prev;
 	TOGO_M_CACHE_ITEM * next;
@@ -83,6 +85,8 @@ BOOL togo_m_cache_add(TOGO_THREAD_ITEM * socket_item, u_char * key,
 BOOL togo_m_cache_replace(TOGO_THREAD_ITEM * socket_item, u_char * key,
 		uint32_t expires, uint32_t vlen);
 BOOL togo_m_cache_delete(TOGO_THREAD_ITEM * socket_item, u_char * key);
+BOOL togo_m_cache_get(TOGO_THREAD_ITEM * socket_item, u_char * key);
+BOOL togo_m_cache_flush(TOGO_THREAD_ITEM * socket_item);
 
 TOGO_POOL * togo_m_cache_pool;
 TOGO_HASHTABLE * togo_m_cache_hashtable;
