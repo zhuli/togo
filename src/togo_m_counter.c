@@ -163,7 +163,6 @@ static TOGO_M_COUNTER * togo_m_counter_item(u_char * name)
 {
 	TOGO_HASHTABLE_ITEM * hash_item;
 	TOGO_M_COUNTER * item;
-	uint32_t klen;
 
 	hash_item = togo_hashtable_get(togo_m_counter_hashtable, name);
 
@@ -180,15 +179,13 @@ static TOGO_M_COUNTER * togo_m_counter_item(u_char * name)
 				return NULL;
 			}
 
-			klen = togo_strlen(name);
 			u_char * buf = (u_char *) togo_pool_alloc(togo_m_counter_pool,
-					klen + 1);
+					togo_pool_strlen(name));
 			if (buf == NULL) {
 				pthread_mutex_unlock(&togo_m_counter_glock);
 				return NULL;
 			}
-			togo_memcpy(buf, name, klen);
-			*(buf + klen + 1) = '\0';
+			togo_strcpy(buf, name);
 
 			pthread_mutex_init(&item->lock, NULL);
 			item->pool = togo_m_counter_pool;

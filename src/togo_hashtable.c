@@ -373,7 +373,6 @@ static TOGO_HASHTABLE_ITEM * togo_hashtable_get_general(
 
 	item = bucket->item;
 	while (item != NULL) {
-
 		if (togo_strcmp(item->key, key) == 0) {
 			current = item;
 			break;
@@ -425,11 +424,6 @@ static void togo_hashtable_expand_init(TOGO_HASHTABLE * hashtable)
 		pthread_mutex_unlock(&hashtable->global_lock);
 		return;
 	}
-
-	togo_log(INFO,
-			"HashTbale expanding old bucket size: %d new bucket size: %d total size: %d",
-			hashtable->total_bucket, expand_total_bucket,
-			hashtable->total_size);
 
 	hashtable->expand_total_bucket = expand_total_bucket;
 	hashtable->expand_status = TRUE;

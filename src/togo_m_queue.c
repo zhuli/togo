@@ -478,21 +478,19 @@ static TOGO_M_QUEUE * togo_m_queue_create(u_char * name)
 {
 	TOGO_M_QUEUE * queue;
 	TOGO_M_QUEUE_BLOCK * block;
-	uint32_t klen;
 
-	klen = togo_strlen(name);
 	queue = (TOGO_M_QUEUE *) togo_pool_calloc(togo_m_queue_pool,
 			sizeof(TOGO_M_QUEUE));
 	if (queue == NULL) {
 		return NULL;
 	}
 
-	u_char * buf = (u_char *) togo_pool_alloc(togo_m_queue_pool, klen + 1);
+	u_char * buf = (u_char *) togo_pool_alloc(togo_m_queue_pool,
+			togo_pool_strlen(name));
 	if (buf == NULL) {
 		return NULL;
 	}
-	togo_memcpy(buf, name, klen);
-	*(buf + klen + 1) = '\0';
+	togo_strcpy(buf, name);
 
 	block = togo_m_queue_block_get();
 	if (block == NULL) {
