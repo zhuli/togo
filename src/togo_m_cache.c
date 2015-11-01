@@ -11,7 +11,7 @@
 static void togo_m_cache_create_area(uint32_t msize, uint32_t i,
 		TOGO_M_CACHE_AREA * area);
 static TOGO_M_CACHE_CHUNK * togo_m_cache_create_chunk(TOGO_M_CACHE_AREA * area);
-static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
+static BOOL togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 		TOGO_M_CACHE_ITEM * item, TOGO_M_CACHE_AREA * area, uint32_t klen,
 		uint32_t vlen, u_char * key, uint32_t expires);
 static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
@@ -287,9 +287,6 @@ BOOL togo_m_cache_get(TOGO_THREAD_ITEM * socket_item, u_char * key)
 
 	togo_send_dbig(socket_item, buf, vlen, togo_m_cache_get_cb, (void *) item);
 
-	togo_m_cache->total_read++;
-	togo_m_cache->total_hit++;
-
 	return TRUE;
 
 }
@@ -404,7 +401,7 @@ static TOGO_M_CACHE_CHUNK * togo_m_cache_create_chunk(TOGO_M_CACHE_AREA * area)
 
 }
 
-static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
+static BOOL togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 		TOGO_M_CACHE_ITEM * item, TOGO_M_CACHE_AREA * area, uint32_t klen,
 		uint32_t vlen, u_char * key, uint32_t expires)
 {
@@ -442,7 +439,7 @@ static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 	togo_read_data(socket_item, togo_m_cache->pool, new_val, vlen,
 			togo_m_cache_set_cb, (void *) item);
 
-	return new_key;
+	return TRUE;
 }
 
 static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
@@ -501,8 +498,6 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	TOGO_M_CACHE_ITEM * item;
 	TOGO_M_CACHE_CHUNK * chunk;
 	TOGO_M_CACHE_ITEM * temp;
-	u_char * new_key;
-	BOOL ret = FALSE;
 
 	klen = togo_strlen(key);
 	if (klen == 0 || vlen == 0 || togo_m_cache->area == NULL) {
@@ -530,8 +525,8 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 		chunk = area->chunk_curr;
 		item = (TOGO_M_CACHE_ITEM *) ((TOGO_M_CACHE_ITEM *) chunk->p
 				+ area->chunk_item_curr);
-		new_key = togo_m_cache_create_item(socket_item, item, area, klen, vlen,
-				key, expires);
+		togo_m_cache_create_item(socket_item, item, area, klen, vlen, key,
+				expires);
 
 		area->chunk_item_curr++;
 
@@ -546,8 +541,8 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 				area->free_list = area->free_list->next;
 			}
 
-			new_key = togo_m_cache_create_item(socket_item, item, area, klen,
-					vlen, key, expires);
+			togo_m_cache_create_item(socket_item, item, area, klen, vlen, key,
+					expires);
 
 		} else {
 			/* Alloc a new chunk*/
@@ -579,8 +574,8 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 				item = (TOGO_M_CACHE_ITEM *) ((TOGO_M_CACHE_ITEM *) chunk->p
 						+ area->chunk_item_curr);
 
-				new_key = togo_m_cache_create_item(socket_item, item, area,
-						klen, vlen, key, expires);
+				togo_m_cache_create_item(socket_item, item, area, klen, vlen,
+						key, expires);
 
 			} else {
 				pthread_mutex_unlock(&togo_m_cache->glock);
@@ -623,8 +618,8 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 					}
 				}
 
-				new_key = togo_m_cache_create_item(socket_item, item, area,
-						klen, vlen, key, expires);
+				togo_m_cache_create_item(socket_item, item, area, klen, vlen,
+						key, expires);
 			}
 
 		}
@@ -635,21 +630,21 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 
 	pthread_mutex_unlock(&area->lock);
 
-	/* HashTable */
-	ret = togo_hashtable_add(togo_m_cache_hashtable, new_key, (void *) item);
-	if (ret == FALSE) {
-		togo_log(INFO, "togo_hashtable_add fail.");
-		return FALSE;
-	}
+	return TRUE;
+
 }
 
 static void togo_m_cache_set_cb(TOGO_THREAD_ITEM * socket_item)
 {
 	TOGO_M_CACHE_ITEM * item;
+	u_char * new_key;
 
 	item = (TOGO_M_CACHE_ITEM *) socket_item->bparam;
 	item->status = 1;
 
+	/* HashTable */
+	new_key = (u_char *) item + sizeof(TOGO_M_CACHE_ITEM);
+	togo_hashtable_add(togo_m_cache_hashtable, new_key, (void *) item);
 }
 
 static void togo_m_cache_get_cb(TOGO_THREAD_ITEM * socket_item)
@@ -657,6 +652,8 @@ static void togo_m_cache_get_cb(TOGO_THREAD_ITEM * socket_item)
 	TOGO_M_CACHE_ITEM * item;
 
 	item = (TOGO_M_CACHE_ITEM *) socket_item->bsparam;
+	togo_m_cache->total_read++;
+	togo_m_cache->total_hit++;
 }
 
 static BOOL togo_m_cache_delete_comm(TOGO_M_CACHE_ITEM * item)
