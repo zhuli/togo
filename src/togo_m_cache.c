@@ -410,7 +410,6 @@ static BOOL togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 {
 	u_char * new_key;
 	u_char * new_val;
-	u_char * nbsp;
 
 	item->area = area;
 	item->expires = (expires == 0) ? 0 : togo_get_time() + expires;
@@ -450,7 +449,7 @@ static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
 	uint32_t low, high, mid, curr, pre;
 	int32_t ret;
 
-	if (size <= TOGO_M_CACHE_CHUNK_SIZE) {
+	if (size <= TOGO_M_CACHE_ITEM_START) {
 		return 0;
 	}
 	if (size > TOGO_M_CACHE_MAX_SIZE) {
@@ -506,6 +505,7 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	}
 
 	item_size = togo_m_cache_item_size(klen, vlen);
+
 	area_id = togo_m_cache_area_search(togo_m_cache->area_table, item_size,
 			togo_m_cache->total_area);
 	if (area_id == -1) {
@@ -513,7 +513,6 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	}
 
 	area = (TOGO_M_CACHE_AREA *) (togo_m_cache->area + area_id);
-
 	pthread_mutex_lock(&area->lock);
 
 	if (togo_m_cache->is_flush == TRUE) {
