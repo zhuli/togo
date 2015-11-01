@@ -180,7 +180,6 @@ BOOL togo_m_cache_set(TOGO_THREAD_ITEM * socket_item, u_char * key,
 {
 	TOGO_M_CACHE_ITEM * item;
 	TOGO_HASHTABLE_ITEM * hitem;
-
 	hitem = togo_hashtable_get(togo_m_cache_hashtable, key);
 	if (hitem != NULL) {
 		item = (TOGO_M_CACHE_ITEM *) hitem->p;
@@ -414,7 +413,7 @@ static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 	u_char * nbsp;
 
 	item->area = area;
-	item->expires = togo_get_time() + expires;
+	item->expires = (expires == 0) ? 0 : togo_get_time() + expires;
 	item->klen = klen;
 	item->vlen = vlen;
 	item->next = NULL;
@@ -442,6 +441,8 @@ static u_char * togo_m_cache_create_item(TOGO_THREAD_ITEM * socket_item,
 
 	togo_read_data(socket_item, togo_m_cache->pool, new_val, vlen,
 			togo_m_cache_set_cb, (void *) item);
+
+	return new_key;
 }
 
 static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
@@ -501,6 +502,7 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	TOGO_M_CACHE_CHUNK * chunk;
 	TOGO_M_CACHE_ITEM * temp;
 	u_char * new_key;
+	BOOL ret = FALSE;
 
 	klen = togo_strlen(key);
 	if (klen == 0 || vlen == 0 || togo_m_cache->area == NULL) {
@@ -633,7 +635,11 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	pthread_mutex_unlock(&area->lock);
 
 	/* HashTable */
-	togo_hashtable_add(togo_m_cache_hashtable, new_key, (void *) item);
+	ret = togo_hashtable_add(togo_m_cache_hashtable, new_key, (void *) item);
+	if (ret == FALSE) {
+		togo_log(INFO, "togo_hashtable_add fail.");
+		return FALSE;
+	}
 }
 
 static void togo_m_cache_set_cb(TOGO_THREAD_ITEM * socket_item)
@@ -648,18 +654,22 @@ static void togo_m_cache_get_cb(TOGO_THREAD_ITEM * socket_item)
 {
 	TOGO_M_CACHE_ITEM * item;
 
-	item = (TOGO_M_CACHE_ITEM *) socket_item->bparam;
+	item = (TOGO_M_CACHE_ITEM *) socket_item->bsparam;
 	item->status = 1;
 }
 
 static BOOL togo_m_cache_delete_comm(TOGO_M_CACHE_ITEM * item)
 {
 	TOGO_M_CACHE_AREA * area;
+	u_char * new_key;
 
 	if (item == NULL) {
 		return FALSE;
 	}
 	area = item->area;
+
+	new_key = (u_char *) item + sizeof(TOGO_M_CACHE_ITEM);
+	togo_hashtable_remove(togo_m_cache_hashtable, new_key);
 
 	pthread_mutex_lock(&area->lock);
 
