@@ -397,7 +397,7 @@ static TOGO_M_CACHE_CHUNK * togo_m_cache_create_chunk(TOGO_M_CACHE_AREA * area)
 	chunk->area = area;
 	chunk->next = NULL;
 	chunk->prev = NULL;
-	chunk->p;
+	chunk->p = p;
 
 	togo_m_cache->total_size += TOGO_M_CACHE_CHUNK_SIZE;
 
@@ -526,9 +526,7 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	if (area->chunk_item_curr < area->chunk_item_num) {
 
 		chunk = area->chunk_curr;
-		item = (TOGO_M_CACHE_ITEM *) (chunk->p
-				+ (area->msize * area->chunk_item_curr));
-
+		item = (TOGO_M_CACHE_ITEM *) (chunk->p + area->chunk_item_curr);
 		new_key = togo_m_cache_create_item(socket_item, item, area, klen, vlen,
 				key, expires);
 
