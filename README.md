@@ -51,10 +51,15 @@ QUIT\r\n
 
 ##2. 计数器模块协议
 ###计数器加上某个数字，默认+1
-```c
+```
 COUNTER PLUS #NAME #NUM\r\n
 COUNTER PLUS test 1\r\n
 ```
+##### *Return value*
+```
+TOGO_S1TOGO_E\r\n
+```
+
 ###计数器减去某个数字，默认-1
 ```
 COUNTER MINUS #NAME #NUM\r\n
