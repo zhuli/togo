@@ -1,7 +1,7 @@
 #Togo a simple memory tool for Server
 #下载地址：
-Togo:https://github.com/zhuli/togo/raw/master/version/togo-1.0.tar.gz<br/>
-Togo_PHP: https://github.com/SKPHP1989/php_togo/archive/master.zip
+Togo 源码包：https://github.com/zhuli/togo/raw/master/version/togo-1.0.tar.gz<br/>
+Togo_PHP扩展 ： https://github.com/SKPHP1989/php_togo/archive/master.zip
 
 #安装说明：
 
