@@ -33,121 +33,122 @@ cp /usr/lib/libevent-2.0.so.5 /usr/lib64/
 ```
 
 #功能说明：
-0. 获取版本号和退出<br>
-1. 提供计数器模块<br>
-2. 提供队列模块<br>
-3. 内存锁模块<br>
-4. 缓存模块<br/>
+1. 获取版本号和退出<br>
+2. 提供计数器模块<br>
+3. 提供队列模块<br>
+4. 内存锁模块<br>
+5. 缓存模块<br/>
 
-*获取TOGO版本：<br>
-```c
+##1. 获取版本号和退出：
+###获取TOGO版本
+```
 VERSION\r\n
 ```
-*断开连接：<br>
-```c
+###断开连接：<br>
+```
 QUIT\r\n
 ```
 
-*计数器模块协议：<br>
-1 计数器加上某个数字，默认+1<br>
+##2. 计数器模块协议
+###计数器加上某个数字，默认+1
 ```c
 COUNTER PLUS #NAME #NUM\r\n
 COUNTER PLUS test 1\r\n
 ```
-2 计数器减去某个数字，默认-1<br>
-```c
+###计数器减去某个数字，默认-1
+```
 COUNTER MINUS #NAME #NUM\r\n
 COUNTER MINUS test 1\r\n
 ```
-3 计数器获取一个值<br>
-```c
+###计数器获取一个值
+```
 COUNTER GET #NAME\r\n
 COUNTER GET test\r\n
 ```
-4 计数器初始化<br>
-```c
+###计数器初始化
+```
 COUNTER RESET #NAME\r\n
 COUNTER RESET test\r\n
 ```
 
-*队列模块协议：<br>
-1 从左边插入一个记录<br>
-```c
+##队列模块协议
+###从左边插入一个记录
+```
 QUEUE LPUSH #NAME #VALUE #PRIORITY(1,2,3 优先级)\r\n
 QUEUE LPUSH test 1234\r\n
 QUEUE LPUSH test 1234 2\r\n
 ```
-2 从右边插入一个记录<br>
-```c
+###从右边插入一个记录
+```
 QUEUE RPUSH #NAME #VALUE #PRIORITY(1,2,3 优先级)\r\n
 QUEUE RPUSH test 1234\r\n
 QUEUE RPUSH test 1234 2\r\n
 ```
-3 从左边获取一个记录<br>
-```c
+###从左边获取一个记录
+```
 QUEUE LPOP #NAME\r\n
 QUEUE LPOP test\r\n
 ```
-4 从右边获取一个记录<br>
-```c
+###从右边获取一个记录
+```
 QUEUE RPOP #NAME\r\n 
 QUEUE RPOP test\r\n
 ```
-5 获取一个队列的总记录数<br>
-```c
+###获取一个队列的总记录数
+```
 QUEUE COUNT #NAME\r\n 
 QUEUE COUNT test\r\n
 ```
-6 获取一个队列的状态<br>
-```c
+###获取一个队列的状态
+```
 QUEUE STATUS #NAME\r\n
 QUEUE STATUS test\r\n
 ```
 
-*内存锁模块协议：<br>
-1 LOCK操作<br>
-```c
+##内存锁模块协议：
+###LOCK操作
+```
 LOCK LOCK #NAME\r\n
 LOCK LOCK test\r\n
 ```
-2 UNLOCK操作<br>
-```c
+###UNLOCK操作
+```
 LOCK UNLOCK #NAME\r\n
 LOCK UNLOCK test\r\n
 ```
-3 获取一把锁的状态<br>
-```c
+###获取一把锁的状态
+```
 LOCK STATUS #NAME\r\n
 ```
 
-*返回值协议：<br>
-1 操作成功<br>
-```c
+#返回值协议
+##操作成功
+```
 TOGO_STOGO_OKTOGO_E\r\n
 TOGO_S#value#TOGO_E\r\n
 ```
-2 操作失败<br>
-```c
+##操作失败<br>
+```
 TOGO_STOGO_FAILTOGO_E\r\n
 ```
-3 返回为空<br>
-```c
+##返回为空<br>
+```
 TOGO_STOGO_NULLTOGO_E\r\n
 ```
-4 命令行太长<br>
-```c
+##命令行太长<br>
+```
 TOGO_STOGO_COMMAND_TOO_BIGTOGO_E\r\n
 ```
-5 需要发送/接收的内容太大<br>
-```c
+##需要发送/接收的内容太大<br>
+```
 TOGO_STOGO_TOO_BIGTOGO_E\r\n
 ```
-6 元素已经存在<br>
-```c
-TOGO_STOGO_EXISTTOGO_E\r\n
+##元素已经存在<br>
+```
+TOGO_STOGO_IS_EXISTTOGO_E\r\n
 ```
 
-7 元素不存在<br>
-```c
+##元素不存在<br>
+```
 TOGO_STOGO_NOT_EXISTTOGO_E\r\n
 ```
