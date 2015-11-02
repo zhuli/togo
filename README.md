@@ -55,7 +55,7 @@ QUIT\r\n
 COUNTER PLUS #NAME #NUM\r\n
 COUNTER PLUS test 1\r\n
 ```
-##### *Return value*
+##### *Return*
 ```
 TOGO_S1TOGO_E\r\n
 ```
@@ -65,15 +65,29 @@ TOGO_S1TOGO_E\r\n
 COUNTER MINUS #NAME #NUM\r\n
 COUNTER MINUS test 1\r\n
 ```
+##### *Return*
+```
+TOGO_S1TOGO_E\r\n
+```
+
 ###计数器获取一个值
 ```
 COUNTER GET #NAME\r\n
 COUNTER GET test\r\n
 ```
+##### *Return*
+```
+TOGO_S1TOGO_E\r\n
+```
+
 ###计数器初始化
 ```
 COUNTER RESET #NAME\r\n
 COUNTER RESET test\r\n
+```
+##### *Return*
+```
+TOGO_STOGO_OKTOGO_E\r\n
 ```
 
 ##队列模块协议
