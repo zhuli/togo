@@ -20,6 +20,10 @@ BOOL togo_m_counter_command(TOGO_COMMAND_TAG command_tag[],
 	u_char * cname = NULL;
 	int32_t step = 1;
 
+	if (ntag < 3) {
+		return FALSE;
+	}
+
 	/**
 	 * command_tag[0] : Module  COUNTER
 	 * command_tag[1] : Action  PLUS|MINUS|GET|RESET
@@ -135,7 +139,8 @@ BOOL togo_m_counter_get(u_char * name, TOGO_THREAD_ITEM *socket_item)
 	return TRUE;
 }
 
-BOOL togo_m_counter_reset(u_char * name, TOGO_THREAD_ITEM *socket_item) {
+BOOL togo_m_counter_reset(u_char * name, TOGO_THREAD_ITEM *socket_item)
+{
 	TOGO_M_COUNTER * item;
 
 	item = togo_m_counter_item(name);

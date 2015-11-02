@@ -243,6 +243,8 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 	socket_item->rstatus = 0;
 	socket_item->sstatus = 0;
 
+	socket_item->bsize_skip = 0;
+	socket_item->bcurr_skip = 0;
 	socket_item->bbuf = NULL;
 	socket_item->bsize = 0;
 	socket_item->bcurr = NULL;
@@ -385,6 +387,15 @@ static void togo_wt_read_cb(struct bufferevent *bev, void *arg)
 				BOOL ret = togo_command_read_big_data(socket_item,
 						togo_wt_send_cb);
 				if (ret == FALSE) {
+					togo_wt_destroy_socket(bev, socket_item);
+					break;
+				}
+				continue;
+			}
+
+			if (socket_item->rstatus == 2) {
+				BOOL skip_ret = togo_command_read_big_data_skip(socket_item);
+				if (skip_ret == FALSE) {
 					togo_wt_destroy_socket(bev, socket_item);
 					break;
 				}

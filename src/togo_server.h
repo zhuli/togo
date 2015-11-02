@@ -27,7 +27,7 @@ struct togo_thread_item {
 	int sfd; /* socket ID */
 	struct bufferevent *bev;
 
-	int rstatus; /* The status of when to read the big data! 0-nomal;1-read big data*/
+	int rstatus; /* The status of when to read the big data! 0-nomal;1-read big data; 2-Skip the big data read*/
 	u_char * rbuf; /* The buffer stores client data*/
 	int rsize; /* The size of the rbuf */
 	u_char * rcurr; /* Record the usage of read_buf */
@@ -38,6 +38,8 @@ struct togo_thread_item {
 	int sbuf_size; /* The buffer size */
 	int ssize; /* The size of the send data */
 
+	size_t bsize_skip;
+	size_t bcurr_skip;
 	void * bbuf; /* The buffer to read the big data !*/
 	size_t bsize; /* The size of the bbuf */
 	void * bcurr; /* Record the usage of bbuf */

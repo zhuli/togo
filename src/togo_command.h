@@ -17,7 +17,7 @@
 #define TOGO_SBUF_NULL "TOGO_NULL"
 #define TOGO_SBUF_COMMAND_TOO_BIG "TOGO_COMMAND_TOO_BIG"
 #define TOGO_SBUF_TOO_BIG "TOGO_TOO_BIG"
-#define TOGO_SBUF_EXIST "TOGO_EXIST"
+#define TOGO_SBUF_IS_EXIST "TOGO_IS_EXIST"
 #define TOGO_SBUF_NOT_EXIST "TOGO_NOT_EXIST"
 
 #define togo_send_data togo_command_build_send
@@ -25,6 +25,7 @@
 #define togo_send_null togo_command_build_send_null
 #define togo_send_dbig togo_command_build_send_dbig
 #define togo_read_data togo_command_build_read
+#define togo_read_skip togo_command_build_read_skip
 
 /**
  * command sign
@@ -55,14 +56,19 @@ enum TOGO_READ_NETWORK togo_command_read_network(struct bufferevent *bev,
 BOOL togo_command_parse_command(TOGO_THREAD_ITEM * socket_item,
 		SEND_CALLBACK togo_wt_send_cb);
 /**
- * When setting the socket_item->bstatus=1, We will reading the big data
+ * When setting the socket_item->rstatus=1, We will reading the big data
  * from socket_item->rbuf. The socket_item->bstatus will be set 0
  * Only read enough data.
  */
 BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 		SEND_CALLBACK togo_wt_send_cb);
+/**
+ * When setting the socket_item->rstatus=2,  We will skip the big data read.
+ */
+BOOL togo_command_read_big_data_skip(TOGO_THREAD_ITEM * socket_item);
 void togo_command_build_read(TOGO_THREAD_ITEM * socket_item, TOGO_POOL * bpool,
 		u_char * buf, size_t len, BDATA_CALLBACK callback, void * param);
+void togo_command_build_read_skip(TOGO_THREAD_ITEM * socket_item, size_t len);
 void togo_command_build_send(TOGO_THREAD_ITEM * socket_item, u_char * buf,
 		size_t len);
 void togo_command_build_send_fail(TOGO_THREAD_ITEM * socket_item);

@@ -37,6 +37,10 @@ BOOL togo_m_cache_command(TOGO_COMMAND_TAG command_tag[],
 	size_t expires = 0;
 	BOOL ret = FALSE;
 
+	if (ntag < 2) {
+		return FALSE;
+	}
+
 	/**
 	 * command_tag[0] : Module  CACHE
 	 * command_tag[1] : Action  SET|ADD|REPLACE|DELETE|GET|FLUSH
@@ -157,7 +161,6 @@ void togo_m_cache_init(void)
 		if (curr >= TOGO_M_CACHE_CHUNK_SIZE) {
 			curr = TOGO_M_CACHE_CHUNK_SIZE;
 		}
-
 		*(area_table + i) = curr;
 		i++;
 	}
@@ -203,8 +206,13 @@ BOOL togo_m_cache_add(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	if (hitem != NULL) {
 		item = (TOGO_M_CACHE_ITEM *) hitem->p;
 		if (item->expires == 0 || item->expires > togo_get_time()) {
-			togo_send_data(socket_item, TOGO_SBUF_EXIST,
-					togo_strlen(TOGO_SBUF_EXIST));
+
+			/* Skip to read the value!*/
+			togo_read_skip(socket_item, vlen);
+
+			togo_send_data(socket_item, TOGO_SBUF_IS_EXIST,
+					togo_strlen(TOGO_SBUF_IS_EXIST));
+
 			return TRUE;
 		}
 
@@ -223,22 +231,29 @@ BOOL togo_m_cache_replace(TOGO_THREAD_ITEM * socket_item, u_char * key,
 	hitem = togo_hashtable_get(togo_m_cache_hashtable, key);
 	if (hitem == NULL) {
 
+		/* Skip to read the value!*/
+		togo_read_skip(socket_item, vlen);
+
 		togo_send_data(socket_item, TOGO_SBUF_NOT_EXIST,
 				togo_strlen(TOGO_SBUF_NOT_EXIST));
 		return TRUE;
 
-	} else {
+	}
 
-		item = (TOGO_M_CACHE_ITEM *) hitem->p;
-		if (item->expires != 0 && item->expires < togo_get_time()) {
+	item = (TOGO_M_CACHE_ITEM *) hitem->p;
 
-			togo_m_cache_delete_comm(item);
-			togo_send_data(socket_item, TOGO_SBUF_NOT_EXIST,
-					togo_strlen(TOGO_SBUF_NOT_EXIST));
-			return TRUE;
-		}
+	if (item->expires != 0 && item->expires < togo_get_time()) {
+
+		/* Skip to read the value!*/
+		togo_read_skip(socket_item, vlen);
+
+		togo_m_cache_delete_comm(item);
+		togo_send_data(socket_item, TOGO_SBUF_NOT_EXIST,
+				togo_strlen(TOGO_SBUF_NOT_EXIST));
 		return TRUE;
 	}
+
+	togo_m_cache_delete_comm(item);
 
 	return togo_m_cache_set_comm(socket_item, key, expires, vlen);
 }
@@ -332,10 +347,11 @@ BOOL togo_m_cache_flush(TOGO_THREAD_ITEM * socket_item)
 		pthread_mutex_unlock(&area_curr->lock);
 
 	}
-
+	togo_hashtable_flush(togo_m_cache_hashtable);
 	togo_m_cache->is_flush = FALSE;
 	pthread_mutex_unlock(&togo_m_cache->glock);
 
+	return TRUE;
 }
 
 static void togo_m_cache_create_area(uint32_t msize, uint32_t i,

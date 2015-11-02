@@ -17,6 +17,10 @@ BOOL togo_m_lock_command(TOGO_COMMAND_TAG command_tag[],
 	u_char * action = NULL;
 	u_char * cname = NULL;
 
+	if (ntag < 3) {
+		return FALSE;
+	}
+
 	/**
 	 * command_tag[0] : Module  LOCK
 	 * command_tag[1] : Action  LOCK|UNLOCK|STATUS

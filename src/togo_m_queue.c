@@ -28,6 +28,10 @@ BOOL togo_m_queue_command(TOGO_COMMAND_TAG command_tag[],
 	BOOL ret = FALSE;
 	uint32_t priority = 0;
 
+	if (ntag < 3) {
+		return FALSE;
+	}
+
 	/**
 	 * command_tag[0] : Module  QUEUE
 	 * command_tag[1] : Action  RPUSH|LPUSH|LPOP|RPOP|COUNT|STATUS

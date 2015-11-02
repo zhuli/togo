@@ -253,11 +253,11 @@ BOOL togo_hashtable_flush(TOGO_HASHTABLE * hashtable)
 	for (i = 0; i < hashtable->total_bucket; i++) {
 		while (bucket->item != NULL) {
 			item = bucket->item;
-			bucket->item = bucket->item->next;
+			bucket->item = item->next;
 			togo_pool_free_data(hashtable->pool, (void *) item);
 		}
 		bucket->size = 0;
-		bucket = bucket++;
+		bucket = (hashtable->bucket + i);
 	}
 
 	/* If the hashtable is expanding, need to flush the expand table*/
@@ -266,11 +266,11 @@ BOOL togo_hashtable_flush(TOGO_HASHTABLE * hashtable)
 		for (j = 0; j < hashtable->expand_total_bucket; j++) {
 			while (bucket->item != NULL) {
 				item = bucket->item;
-				bucket->item = bucket->item->next;
+				bucket->item = item->next;
 				togo_pool_free_data(hashtable->pool, (void *) item);
 			}
 			bucket->size = 0;
-			bucket = bucket++;
+			bucket = (hashtable->expand_bucket + j);
 		}
 
 		togo_pool_free_data(hashtable->pool, (void *) hashtable->expand_bucket);

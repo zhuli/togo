@@ -139,8 +139,10 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 
 	callback = socket_item->bcb;
 	space = abs((socket_item->bbuf + socket_item->bsize) - socket_item->bcurr);
-	if (space == 0)
-		return FALSE;
+	if (space == 0) {
+		togo_command_close_read_big_data(socket_item);
+		return TRUE;
+	}
 
 	if (socket_item->rbytes >= space) {
 
@@ -184,6 +186,32 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 	return TRUE;
 }
 
+BOOL togo_command_read_big_data_skip(TOGO_THREAD_ITEM * socket_item)
+{
+	size_t space;
+	space = abs(socket_item->bsize_skip - socket_item->bcurr_skip);
+	if (space == 0) {
+		socket_item->bsize_skip = 0;
+		socket_item->bcurr_skip = 0;
+		socket_item->rstatus = 0;
+		return TRUE;
+	}
+
+	if (socket_item->rbytes >= space) {
+		socket_item->rcurr = socket_item->rcurr + space;
+		socket_item->rbytes = socket_item->rbytes - space;
+
+		socket_item->bsize_skip = 0;
+		socket_item->bcurr_skip = 0;
+		socket_item->rstatus = 0;
+
+	} else {
+		socket_item->rcurr = socket_item->rcurr + space;
+		socket_item->rbytes = 0;
+	}
+	return TRUE;
+}
+
 void togo_command_build_read(TOGO_THREAD_ITEM * socket_item, TOGO_POOL * bpool,
 		u_char * buf, size_t len, BDATA_CALLBACK callback, void * param)
 {
@@ -196,6 +224,13 @@ void togo_command_build_read(TOGO_THREAD_ITEM * socket_item, TOGO_POOL * bpool,
 	socket_item->bcurr = buf;
 	socket_item->bsize = len;
 	socket_item->bpool = bpool;
+}
+
+void togo_command_build_read_skip(TOGO_THREAD_ITEM * socket_item, size_t len)
+{
+	socket_item->rstatus = 2;
+	socket_item->bcurr_skip = 0;
+	socket_item->bsize_skip = len;
 }
 
 void togo_command_build_send(TOGO_THREAD_ITEM * socket_item, u_char * buf,

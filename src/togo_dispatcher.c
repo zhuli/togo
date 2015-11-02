@@ -31,7 +31,7 @@ void togo_dispatcher(TOGO_COMMAND_TAG command_tag[],
 		 * command_tag[3] : Value
 		 * command_tag[4] : Option
 		 */
-		if (ntag < 3 || command_tag[0].value == NULL) {
+		if (ntag < 2 || command_tag[0].value == NULL) {
 			ret = FALSE;
 
 		} else if (togo_strcmp(command_tag[0].value, "QUEUE") == 0) {
