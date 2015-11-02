@@ -40,11 +40,11 @@ cp /usr/lib/libevent-2.0.so.5 /usr/lib64/
 5. 缓存模块<br/>
 
 ##1. 获取版本号和退出：
-###获取TOGO版本
+###1. 获取TOGO版本
 ```
 VERSION\r\n
 ```
-###断开连接：<br>
+###2. 断开连接：<br>
 ```
 QUIT\r\n
 ```
@@ -122,7 +122,7 @@ QUEUE LPOP test\r\n
 ```
 ##### *Return:*
 ```
-TOGO_S123TOGO_E\r\n  #成功，获取值
+TOGO_S123TOGO_E\r\n  #成功
 TOGO_STOGO_NULLTOGO_E\r\n  #空
 TOGO_STOGO_FAILTOGO_E\r\n  #失败
 ```
@@ -133,7 +133,7 @@ QUEUE RPOP test\r\n
 ```
 ##### *Return:*
 ```
-TOGO_S123TOGO_E\r\n  #成功，获取值
+TOGO_S123TOGO_E\r\n  #成功
 TOGO_STOGO_NULLTOGO_E\r\n  #空
 TOGO_STOGO_FAILTOGO_E\r\n  #失败
 ```
@@ -145,7 +145,7 @@ QUEUE COUNT test\r\n
 ```
 ##### *Return:*
 ```
-TOGO_S18TOGO_E\r\n  #成功，获取值
+TOGO_S18TOGO_E\r\n  #成功
 TOGO_STOGO_FAILTOGO_E\r\n  #失败
 ```
 ###6. 获取一个队列的状态
@@ -156,7 +156,7 @@ QUEUE STATUS test\r\n
 ##### *Return:*
 ```
 TOGO_Stotal_elt:18;total_block:1;total_hit:22;total_write:20;
-total_read:2;total_size:2097200TOGO_E\r\n  #成功，获取值
+total_read:2;total_size:2097200TOGO_E\r\n  #成功
 TOGO_STOGO_FAILTOGO_E\r\n  #失败
 ```
 
@@ -168,7 +168,7 @@ LOCK LOCK test\r\n
 ```
 ##### *Return:*
 ```
-TOGO_S1TOGO_E\r\n  #成功，获取值
+TOGO_S1TOGO_E\r\n  #成功
 TOGO_STOGO_FAILTOGO_E\r\n  #失败
 ```
 
@@ -179,7 +179,7 @@ LOCK UNLOCK test\r\n
 ```
 ##### *Return:*
 ```
-TOGO_S0TOGO_E\r\n  #成功，获取值
+TOGO_S0TOGO_E\r\n  #成功
 TOGO_STOGO_FAILTOGO_E\r\n  #失败
 ```
 
@@ -189,11 +189,73 @@ LOCK STATUS #NAME\r\n
 ```
 ##### *Return:*
 ```
-TOGO_Sstatus:1;total:3;total_lock:3;total_unlock:0TOGO_E\r\n  #成功，获取值
+TOGO_Sstatus:1;total:3;total_lock:3;total_unlock:0TOGO_E\r\n  #成功
 TOGO_STOGO_FAILTOGO_E\r\n  #失败
 ```
 
-#返回值协议
+##缓存模块协议：
+###1. 缓存set操作(如果元素存在，则替换)
+```
+CACHE SET #key #expires #vlen(例如5，则value的长度为5)\r\n
+abced  #value值长度为5
+```
+
+##### *Return:*
+```
+TOGO_SOKTOGO_E\r\n  #成功
+TOGO_STOGO_FAILTOGO_E\r\n  #失败
+```
+
+###2. 缓存add操作（如果元素存在，则不替换）
+```
+CACHE ADD #key #expires #vlen(例如5，则value的长度为5)\r\n
+abced  #value值长度为5
+```
+
+##### *Return:*
+```
+TOGO_SOKTOGO_E\r\n  #成功
+TOGO_STOGO_FAILTOGO_E\r\n  #失败
+TOGO_STOGO_IS_EXISTTOGO_E\r\n  #元素已经存在
+```
+
+###3. 缓存replace操作（如果元素存在，则替换）
+```
+CACHE REPLACE #key #expires #vlen(例如5，则value的长度为5)\r\n
+abced  #value值长度为5
+```
+
+##### *Return:*
+```
+TOGO_SOKTOGO_E\r\n  #成功
+TOGO_STOGO_FAILTOGO_E\r\n  #失败
+TOGO_STOGO_NOT_EXISTTOGO_E\r\n  #元素不存在
+```
+
+###4. 缓存get操作
+```
+CACHE GET #key\r\n
+```
+
+##### *Return:*
+```
+TOGO_SabcdeTOGO_E\r\n  #成功
+TOGO_STOGO_FAILTOGO_E\r\n  #失败
+TOGO_STOGO_NOT_EXISTTOGO_E\r\n  #元素不存在
+```
+
+
+###5. 缓存flush操作
+```
+CACHE FLUSH\r\n
+```
+
+##### *Return:*
+```
+TOGO_STOGO_OKTOGO_E\r\n  #成功
+TOGO_STOGO_FAILTOGO_E\r\n  #失败
+```
+##返回值协议
 ####1. 操作成功
 ```
 TOGO_STOGO_OKTOGO_E\r\n
@@ -220,7 +282,7 @@ TOGO_STOGO_TOO_BIGTOGO_E\r\n
 TOGO_STOGO_IS_EXISTTOGO_E\r\n
 ```
 
-###7. 元素不存在<br>
+####7. 元素不存在<br>
 ```
 TOGO_STOGO_NOT_EXISTTOGO_E\r\n
 ```
