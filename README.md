@@ -239,7 +239,7 @@ CACHE GET #key\r\n
 
 ##### *Return:*
 ```
-TOGO_SabcdeTOGO_E\r\n  #成功
+TOGO_S10(长度)TOGO_E/r/nAAAAAAAAAA(值)  #成功
 TOGO_STOGO_FAILTOGO_E\r\n  #失败
 TOGO_STOGO_NOT_EXISTTOGO_E\r\n  #元素不存在
 ```
