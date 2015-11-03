@@ -633,7 +633,8 @@ static BOOL togo_m_cache_set_comm(TOGO_THREAD_ITEM * socket_item, u_char * key,
 						area->lru_tail = temp->prev;
 					}
 				}
-
+				u_char * old_key = togo_m_cache_get_key_addr(item);
+				togo_hashtable_remove(togo_m_cache_hashtable, old_key);
 				togo_m_cache_create_item(socket_item, item, area, klen, vlen,
 						key, expires);
 			}

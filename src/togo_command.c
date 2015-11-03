@@ -145,7 +145,6 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 	}
 
 	if (socket_item->rbytes >= space) {
-
 		togo_memcpy(socket_item->bcurr, socket_item->rcurr, space);
 		socket_item->rcurr = socket_item->rcurr + space;
 		socket_item->rbytes = socket_item->rbytes - space;
@@ -161,9 +160,9 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 
 		togo_memcpy(socket_item->bcurr, socket_item->rcurr,
 				socket_item->rbytes);
-		socket_item->rbytes = 0;
 		socket_item->rcurr = socket_item->rcurr + socket_item->rbytes;
 		socket_item->bcurr = socket_item->bcurr + socket_item->rbytes;
+		socket_item->rbytes = 0;
 
 		return TRUE;
 	}
