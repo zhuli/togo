@@ -17,8 +17,8 @@ make install
 
 #安装togo
 wget https://github.com/zhuli/togo/raw/master/version/togo-1.1.tar.gz
-tar -zvxf togo-1.0.tar.gz
-cd togo-1.0
+tar -zvxf togo-1.1.tar.gz
+cd togo-1.1
 ./configure --prefix=/usr/local/togo
 make
 make install
