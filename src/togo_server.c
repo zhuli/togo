@@ -441,6 +441,7 @@ int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
 				togo_strlen(TOGO_SBUF_START));
 		temp_buf = socket_item->bsbuf;
 		temp_size = socket_item->bssize;
+		togo_log(INFO, "socket_item->bssize:%d", socket_item->bssize);
 		while (1) {
 			if (temp_size <= TOGO_S_SBUF_BUCKET_SIZE) {
 				ret += bufferevent_write(socket_item->bev, temp_buf, temp_size);
