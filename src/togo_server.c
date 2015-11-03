@@ -429,19 +429,30 @@ int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
 	int ret;
 	void * temp_buf;
 	size_t temp_size;
+	char int_str[12];
 
 	/* If sstatus equal to 3, send the big data! */
 	if (socket_item->sstatus == 3) {
+
 		BDATA_CALLBACK callback;
 		if (socket_item->bsbuf == NULL || socket_item->bssize == 0) {
 			return 0;
 		}
 
+		togo_itoa((uint32_t) socket_item->bssize, int_str, 10);
+
+		/**
+		 * Retrun：TOGO_S10TOGO_E/r/nAAAAAAAAAA
+		 */
 		ret = bufferevent_write(socket_item->bev, TOGO_SBUF_START,
 				togo_strlen(TOGO_SBUF_START));
+		ret = bufferevent_write(socket_item->bev, int_str,
+				togo_strlen(int_str));
+		ret += bufferevent_write(socket_item->bev, TOGO_SBUF_END,
+				togo_strlen(TOGO_SBUF_END));
+
 		temp_buf = socket_item->bsbuf;
 		temp_size = socket_item->bssize;
-		togo_log(INFO, "socket_item->bssize:%d", socket_item->bssize);
 		while (1) {
 			if (temp_size <= TOGO_S_SBUF_BUCKET_SIZE) {
 				ret += bufferevent_write(socket_item->bev, temp_buf, temp_size);
@@ -455,8 +466,6 @@ int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
 
 		}
 
-		ret += bufferevent_write(socket_item->bev, TOGO_SBUF_END,
-				togo_strlen(TOGO_SBUF_END));
 		if (ret < 0) {
 			togo_log(INFO, "Send data error");
 		}
