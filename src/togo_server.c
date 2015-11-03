@@ -427,8 +427,6 @@ static void togo_wt_read_cb(struct bufferevent *bev, void *arg)
 int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
 {
 	int ret;
-	void * temp_buf;
-	size_t temp_size;
 	char int_str[12];
 
 	/* If sstatus equal to 3, send the big data! */
@@ -450,21 +448,8 @@ int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
 				togo_strlen(int_str));
 		ret += bufferevent_write(socket_item->bev, TOGO_SBUF_END,
 				togo_strlen(TOGO_SBUF_END));
-
-		temp_buf = socket_item->bsbuf;
-		temp_size = socket_item->bssize;
-		while (1) {
-			if (temp_size <= TOGO_S_SBUF_BUCKET_SIZE) {
-				ret += bufferevent_write(socket_item->bev, temp_buf, temp_size);
-				break;
-			} else {
-				ret += bufferevent_write(socket_item->bev, temp_buf,
-						TOGO_S_SBUF_BUCKET_SIZE);
-				temp_buf = temp_buf + TOGO_S_SBUF_BUCKET_SIZE;
-				temp_size = temp_size - TOGO_S_SBUF_BUCKET_SIZE;
-			}
-
-		}
+		ret += bufferevent_write(socket_item->bev, socket_item->bsbuf,
+				socket_item->bssize);
 
 		if (ret < 0) {
 			togo_log(INFO, "Send data error");

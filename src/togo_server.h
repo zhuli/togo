@@ -14,7 +14,6 @@
 #define TOGO_S_SBUF_INIT_SIZE 1024
 #define TOGO_S_SBUF_MAX_SIZE 8192
 #define TOGO_S_SBUF_SPACE_SIZE 128
-#define TOGO_S_SBUF_BUCKET_SIZE 2048
 #define TOGO_S_FLIST_MAX 1024
 
 typedef struct togo_thread_item TOGO_THREAD_ITEM;
