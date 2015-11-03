@@ -196,7 +196,7 @@ TOGO_STOGO_FAILTOGO_E\r\n  #失败
 ##缓存模块协议：
 ###1. 缓存set操作(如果元素存在，则替换)
 ```
-CACHE SET #key #expires #vlen(例如5，则value的长度为5)\r\n
+CACHE SET #key #expires(缓存时间 0为永久，秒为单位) #vlen(例如5，则value的长度为5)\r\n
 abced  #value值长度为5
 ```
 
@@ -208,7 +208,7 @@ TOGO_STOGO_FAILTOGO_E\r\n  #失败
 
 ###2. 缓存add操作（如果元素存在，则不替换）
 ```
-CACHE ADD #key #expires #vlen(例如5，则value的长度为5)\r\n
+CACHE ADD #key #expires(缓存时间 0为永久，秒为单位) #vlen(例如5，则value的长度为5)\r\n
 abced  #value值长度为5
 ```
 
@@ -221,7 +221,7 @@ TOGO_STOGO_IS_EXISTTOGO_E\r\n  #元素已经存在
 
 ###3. 缓存replace操作（如果元素存在，则替换）
 ```
-CACHE REPLACE #key #expires #vlen(例如5，则value的长度为5)\r\n
+CACHE REPLACE #key #expires(缓存时间 0为永久，秒为单位) #vlen(例如5，则value的长度为5)\r\n
 abced  #value值长度为5
 ```
 
