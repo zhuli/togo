@@ -480,7 +480,7 @@ static int32_t togo_m_cache_area_search(uint32_t * p, uint32_t size,
 			curr = *(p + high);
 			pre = *(p + low);
 			if (size > pre && size <= curr) {
-				ret = curr;
+				ret = high;
 				break;
 			}
 			ret = -1;

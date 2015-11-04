@@ -153,7 +153,6 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 		if (callback != NULL) {
 			callback(socket_item);
 		}
-
 		togo_command_close_read_big_data(socket_item);
 	} else {
 		/* There is no enough space, so we need to  continue to read the big data!*/
@@ -163,7 +162,6 @@ BOOL togo_command_read_big_data(TOGO_THREAD_ITEM * socket_item,
 		socket_item->rcurr = socket_item->rcurr + socket_item->rbytes;
 		socket_item->bcurr = socket_item->bcurr + socket_item->rbytes;
 		socket_item->rbytes = 0;
-
 		return TRUE;
 	}
 
