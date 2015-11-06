@@ -145,6 +145,13 @@ static void togo_c_init()
 
 static void togo_daemon_init()
 {
+	//ignore SIGPIPE signals
+	struct sigaction sa = { .sa_handler = SIG_IGN, .sa_flags = 0 };
+	if (sigemptyset(&sa.sa_mask) == -1 || sigaction(SIGPIPE, &sa, 0) == -1) {
+		togo_log(ERROR, "sigaction");
+		togo_exit();
+	}
+
 	if (togo_global_c->daemon == TRUE) {
 		daemon(1, 1);
 	}

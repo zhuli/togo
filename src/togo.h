@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdarg.h>
+#include <signal.h>
 #include <linux/tcp.h>
 
 #include <event2/event.h>
