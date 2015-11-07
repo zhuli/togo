@@ -2,10 +2,10 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_CONFIG_SRCDIR([togo.c])
+AC_CONFIG_SRCDIR([togo.c])  
 AC_INIT(togo, 1.1,420332292@qq.com)
 AM_INIT_AUTOMAKE(togo, 1.1)
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([config.h])  
 
 # Checks for programs.
 AC_PROG_CC
