@@ -52,7 +52,6 @@ struct togo_thread_item {
 	size_t bssize; /* The size of the big data buffer!*/
 	BDATA_CALLBACK bscb; /* The callback function when send the end of the big data*/
 
-	pthread_mutex_t slock;
 	TOGO_THREAD_ITEM *next; /* a list of TOGO_THREAD_ITEM struct or free list */
 	TOGO_POOL * worker_pool; /* Worker memory pool */
 };

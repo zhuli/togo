@@ -241,7 +241,6 @@ static void togo_mt_doaccept(evutil_socket_t fd, short event, void *arg)
 		socket_item->rsize = sizeof(u_char) * TOGO_S_RBUF_INIT_SIZE;
 		socket_item->sbuf = sbuf;
 		socket_item->sbuf_size = sizeof(u_char) * TOGO_S_SBUF_INIT_SIZE;
-		pthread_mutex_init(&socket_item->slock, NULL);
 	}
 
 	socket_item->sfd = client_socketfd;
@@ -385,7 +384,6 @@ static void togo_wt_read_cb(struct bufferevent *bev, void *arg)
 	enum TOGO_READ_NETWORK read_ret = togo_command_read_network(bev,
 			socket_item);
 
-	pthread_mutex_lock(&socket_item->slock);
 	if (read_ret == READ_DATA_RECEIVED) {
 
 		while (1) {
@@ -432,7 +430,6 @@ static void togo_wt_read_cb(struct bufferevent *bev, void *arg)
 		}
 
 	}
-	pthread_mutex_unlock(&socket_item->slock);
 }
 
 int togo_wt_send_cb(TOGO_THREAD_ITEM * socket_item)
@@ -502,7 +499,6 @@ static void togo_wt_event_cb(struct bufferevent *bev, short event, void *arg)
 static void togo_wt_destroy_socket(struct bufferevent *bev,
 		TOGO_THREAD_ITEM * socket_item)
 {
-	pthread_mutex_lock(&socket_item->slock);
 	if (bev) {
 		bufferevent_free(bev);
 	} else {
@@ -514,7 +510,6 @@ static void togo_wt_destroy_socket(struct bufferevent *bev,
 
 	if (socket_item->worker_pool) {
 		if (togo_thread_flist->total >= TOGO_S_FLIST_MAX) {
-			pthread_mutex_unlock(&socket_item->slock);
 			togo_pool_destroy(socket_item->worker_pool);
 			return;
 		} else {
@@ -537,7 +532,6 @@ static void togo_wt_destroy_socket(struct bufferevent *bev,
 			pthread_mutex_unlock(&togo_thread_flist->lock);
 		}
 	}
-	pthread_mutex_unlock(&socket_item->slock);
 }
 
 static void togo_q_init(TOGO_WORKER_THREAD *worker_thread)
