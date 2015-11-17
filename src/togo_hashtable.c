@@ -248,7 +248,7 @@ TOGO_HASHTABLE_ITEM * togo_hashtable_get(TOGO_HASHTABLE * hashtable,
 			item = bucket->item;
 			while (item != NULL) {
 
-				if (togo_strcmp(item->key, key) == 0) {
+				if (togo_strncmp(item->key, key, len) == 0) {
 					current = item;
 					break;
 				}
@@ -403,7 +403,7 @@ static TOGO_HASHTABLE_ITEM * togo_hashtable_get_general(
 
 	item = bucket->item;
 	while (item != NULL) {
-		if (togo_strcmp(item->key, key) == 0) {
+		if (togo_strncmp(item->key, key, len) == 0) {
 			current = item;
 			break;
 		}
@@ -510,7 +510,8 @@ static void togo_hashtable_expand_do(TOGO_HASHTABLE * hashtable)
 					hashtable->expand_total_bucket, item->key, item->key_len);
 			bucket = (hashtable->expand_bucket + current_bucket);
 
-			expand_lock = togo_hashtable_get_expand_lock(hashtable, current_bucket);
+			expand_lock = togo_hashtable_get_expand_lock(hashtable,
+					current_bucket);
 			if (expand_lock == NULL) {
 				continue;
 			}
@@ -543,15 +544,13 @@ static void togo_hashtable_expand_finish(TOGO_HASHTABLE * hashtable)
 	old_bucket = hashtable->bucket;
 	old_lock = hashtable->lock;
 
-	hashtable->expand_status = FALSE;
 	hashtable->expand_success++;
 	hashtable->bucket = hashtable->expand_bucket;
 	hashtable->lock = hashtable->expand_lock;
 	hashtable->total_bucket = hashtable->expand_total_bucket;
 	hashtable->expand_curr = 0;
-	hashtable->expand_bucket = NULL;
-	hashtable->expand_lock = NULL;
 	hashtable->expand_total_bucket = 0;
+	hashtable->expand_status = FALSE;
 
 	/* Free the old bucket and old lock !*/
 	togo_pool_free_data(hashtable->pool, (void *) old_bucket);
@@ -574,11 +573,13 @@ static pthread_mutex_t * togo_hashtable_get_expand_lock(
 {
 	uint32_t x;
 	pthread_mutex_t * lock;
+	pthread_mutex_t * expand_lock;
+	expand_lock = hashtable->expand_lock;
 	x = togo_hashtable_get_lock(current_bucket, TOGO_HASHTABLE_LOCK_SIZE);
-	if (hashtable->expand_status == FALSE || hashtable->expand_lock == NULL) {
+	if (hashtable->expand_status == FALSE || expand_lock == NULL) {
 		return NULL;
 	} else {
-		lock = (pthread_mutex_t *) (hashtable->expand_lock + x);
+		lock = (pthread_mutex_t *) (expand_lock + x);
 	}
 	return lock;
 }
