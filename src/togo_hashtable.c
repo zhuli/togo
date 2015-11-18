@@ -563,7 +563,6 @@ static void togo_hashtable_expand_finish(TOGO_HASHTABLE * hashtable)
 	hashtable->lock = hashtable->expand_lock;
 	hashtable->total_bucket = hashtable->expand_total_bucket;
 	hashtable->expand_curr = 0;
-	hashtable->expand_total_bucket = 0;
 	hashtable->expand_status = FALSE;
 
 	/* Free the old bucket and old lock !*/
