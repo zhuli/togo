@@ -26,12 +26,18 @@ static pthread_mutex_t * togo_hashtable_get_expand_lock(
 TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool)
 {
 	uint32_t i;
+	TOGO_HASHTABLE_BUCKET * bucket_temp;
 
 	TOGO_HASHTABLE_BUCKET * bucket = (TOGO_HASHTABLE_BUCKET *) togo_pool_calloc(
 			pool, sizeof(TOGO_HASHTABLE_BUCKET) * TOGO_HASHTABLE_BUCKET_NUM);
 	if (bucket == NULL) {
 		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET fail");
 		togo_exit();
+	}
+	for (i = 0; i < TOGO_HASHTABLE_BUCKET_NUM; i++) {
+		bucket_temp = (TOGO_HASHTABLE_BUCKET *) (bucket + i);
+		bucket_temp->item = NULL;
+		bucket_temp->size = 0;
 	}
 
 	TOGO_HASHTABLE *hashtable = (TOGO_HASHTABLE *) togo_pool_calloc(pool,
@@ -92,6 +98,7 @@ BOOL togo_hashtable_add(TOGO_HASHTABLE * hashtable, u_char *key, void * p)
 		item->key = key;
 		item->key_len = len;
 		item->p = p;
+		item->next = NULL;
 	}
 
 	if (hashtable->expand_status == TRUE) {
@@ -248,7 +255,8 @@ TOGO_HASHTABLE_ITEM * togo_hashtable_get(TOGO_HASHTABLE * hashtable,
 			item = bucket->item;
 			while (item != NULL) {
 
-				if (togo_strncmp(item->key, key, len) == 0) {
+				if (len == item->key_len
+						&& togo_strncmp(item->key, key, len) == 0) {
 					current = item;
 					break;
 				}
@@ -403,7 +411,7 @@ static TOGO_HASHTABLE_ITEM * togo_hashtable_get_general(
 
 	item = bucket->item;
 	while (item != NULL) {
-		if (togo_strncmp(item->key, key, len) == 0) {
+		if (len == item->key_len && togo_strncmp(item->key, key, len) == 0) {
 			current = item;
 			break;
 		}
@@ -420,6 +428,7 @@ static void togo_hashtable_expand_init(TOGO_HASHTABLE * hashtable)
 	uint32_t expand_total_bucket, lock_num, i;
 	pthread_mutex_t * lock;
 	TOGO_HASHTABLE_BUCKET * bucket;
+	TOGO_HASHTABLE_BUCKET * bucket_temp;
 
 	pthread_mutex_lock(&hashtable->global_lock);
 
@@ -454,6 +463,11 @@ static void togo_hashtable_expand_init(TOGO_HASHTABLE * hashtable)
 		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET fail");
 		pthread_mutex_unlock(&hashtable->global_lock);
 		return;
+	}
+	for (i = 0; i < expand_total_bucket; i++) {
+		bucket_temp = (TOGO_HASHTABLE_BUCKET *) (bucket + i);
+		bucket_temp->item = NULL;
+		bucket_temp->size = 0;
 	}
 
 	hashtable->expand_total_bucket = expand_total_bucket;
