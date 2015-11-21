@@ -8,9 +8,9 @@
 #ifndef TOGO_HASHTABLE_H
 #define TOGO_HASHTABLE_H
 
-#define TOGO_HASHTABLE_BUCKET_NUM 1024
-#define TOGO_HASHTABLE_LOCK_SIZE 64
-#define TOGO_HASHTABLE_EXPAND_STEP 32
+#define TOGO_HASHTABLE_BUCKET_NUM 8192
+#define TOGO_HASHTABLE_LOCK_SIZE 128
+#define TOGO_HASHTABLE_EXPAND_STEP 128
 #define TOGO_HASHTABLE_EXPAND_POWER 2
 #define togo_hashtable_get_lock(a, b) (a / b)
 #define togo_hashtable_if_expand(a, b) ((a * TOGO_HASHTABLE_EXPAND_POWER) <= b)
