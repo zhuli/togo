@@ -118,6 +118,7 @@ void * togo_pool_alloc(TOGO_POOL * pool, size_t size)
 	pthread_mutex_lock(&pool->mlock);
 	block = pool->block_current;
 	if (block == NULL) {
+		pthread_mutex_unlock(&pool->mlock);
 		return NULL;
 	}
 

@@ -687,10 +687,10 @@ static BOOL togo_m_cache_delete_comm(TOGO_M_CACHE_ITEM * item)
 	}
 	area = item->area;
 
+	pthread_mutex_lock(&area->lock);
+
 	new_key = togo_m_cache_get_key_addr(item);
 	togo_hashtable_remove(togo_m_cache_hashtable, new_key);
-
-	pthread_mutex_lock(&area->lock);
 
 	if (togo_m_cache->is_flush == TRUE) {
 		pthread_mutex_unlock(&area->lock);

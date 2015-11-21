@@ -20,8 +20,6 @@ static TOGO_HASHTABLE_ITEM * togo_hashtable_get_general(
 static uint32_t togo_hashtable_bucket(uint32_t total, u_char *key, size_t len);
 static pthread_mutex_t * togo_hashtable_get_general_lock(
 		TOGO_HASHTABLE * hashtable, uint32_t current_bucket);
-static pthread_mutex_t * togo_hashtable_get_expand_lock(
-		TOGO_HASHTABLE * hashtable, uint32_t current_bucket);
 
 TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool)
 {
@@ -55,7 +53,6 @@ TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool)
 		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET lock fail");
 		togo_exit();
 	}
-
 	for (i = 0; i < lock_num; i++) {
 		pthread_mutex_init((lock + i), NULL);
 	}
@@ -101,48 +98,37 @@ BOOL togo_hashtable_add(TOGO_HASHTABLE * hashtable, u_char *key, void * p)
 		item->next = NULL;
 	}
 
+	/**
+	 * If the hashtable expanding and we　put a new item to the new hashtable.
+	 * If expanding, we only have a global lock.
+	 */
 	if (hashtable->expand_status == TRUE) {
 
-		uint32_t expand_success = hashtable->expand_success;
-		current_bucket = togo_hashtable_bucket(hashtable->expand_total_bucket,
-				key, len);
-		bucket = (hashtable->expand_bucket + current_bucket);
+		pthread_mutex_lock(&hashtable->global_lock);
 
-		/* If other thread run the function of "togo_hashtable_expand_finish"*/
-		if (expand_success
-				!= hashtable->expand_success|| hashtable->expand_status == FALSE) {
-
-			pthread_mutex_lock(&hashtable->global_lock);
-			togo_hashtable_add_general(hashtable, item);
-			pthread_mutex_unlock(&hashtable->global_lock);
-
-		} else {
-
-			lock = togo_hashtable_get_expand_lock(hashtable, current_bucket);
-			if (lock == NULL) {
-				togo_log(INFO,
-						"togo_hashtable_add:togo_hashtable_get_expand_lock NULL");
-				return FALSE;
-			}
-			pthread_mutex_lock(lock);
+		if (hashtable->expand_status == TRUE) {
+			current_bucket = togo_hashtable_bucket(
+					hashtable->expand_total_bucket, key, len);
+			bucket = (hashtable->expand_bucket + current_bucket);
 
 			item->next = bucket->item;
 			bucket->item = item;
 			bucket->size++;
 			hashtable->total_size++;
 
-			pthread_mutex_unlock(lock);
-
-			/* Every operation of add,
+			/* Every operation of add/get/remove,
 			 * We move TOGO_HASHTABLE_EXPAND_STEP bucket
 			 * from old table to new table!*/
 			togo_hashtable_expand_do(hashtable);
+
+			pthread_mutex_unlock(&hashtable->global_lock);
+			return TRUE;
 		}
 
-	} else {
-		togo_hashtable_add_general(hashtable, item);
+		pthread_mutex_unlock(&hashtable->global_lock);
 	}
 
+	togo_hashtable_add_general(hashtable, item);
 	return TRUE;
 }
 
@@ -164,28 +150,12 @@ BOOL togo_hashtable_remove(TOGO_HASHTABLE * hashtable, u_char *key)
 	 */
 	if (hashtable->expand_status == TRUE && is_remove == FALSE) {
 
-		uint32_t expand_success = hashtable->expand_success;
-		current_bucket = togo_hashtable_bucket(hashtable->expand_total_bucket,
-				key, len);
-		bucket = (hashtable->expand_bucket + current_bucket);
+		pthread_mutex_lock(&hashtable->global_lock);
 
-		/* If other thread run the function of "togo_hashtable_expand_finish"*/
-		if (expand_success
-				!= hashtable->expand_success|| hashtable->expand_status == FALSE) {
-
-			pthread_mutex_lock(&hashtable->global_lock);
-			togo_hashtable_remove_general(hashtable, key);
-			pthread_mutex_unlock(&hashtable->global_lock);
-
-		} else {
-
-			lock = togo_hashtable_get_expand_lock(hashtable, current_bucket);
-			if (lock == NULL) {
-				togo_log(INFO,
-						"togo_hashtable_remove:togo_hashtable_get_expand_lock NULL");
-				return FALSE;
-			}
-			pthread_mutex_lock(lock);
+		if (hashtable->expand_status == TRUE) {
+			current_bucket = togo_hashtable_bucket(
+					hashtable->expand_total_bucket, key, len);
+			bucket = (hashtable->expand_bucket + current_bucket);
 
 			item = bucket->item;
 			while (item != NULL) {
@@ -207,8 +177,13 @@ BOOL togo_hashtable_remove(TOGO_HASHTABLE * hashtable, u_char *key)
 				item = item->next;
 			}
 
-			pthread_mutex_unlock(lock);
+			/* Every operation of add/get/remove,
+			 * We move TOGO_HASHTABLE_EXPAND_STEP bucket
+			 * from old table to new table!*/
+			togo_hashtable_expand_do(hashtable);
 		}
+
+		pthread_mutex_unlock(&hashtable->global_lock);
 	}
 
 	return TRUE;
@@ -227,34 +202,20 @@ TOGO_HASHTABLE_ITEM * togo_hashtable_get(TOGO_HASHTABLE * hashtable,
 	current = togo_hashtable_get_general(hashtable, key);
 
 	/**
-	 * If the hashtable expanding and We can't remove from the old table,
-	 * We try to remove item from the new table;
+	 * If the hashtable expanding and We can't find the item from the old table,
+	 * We try to find the item from the new table;
 	 */
 	if (hashtable->expand_status == TRUE && current == NULL) {
-		uint32_t expand_success = hashtable->expand_success;
-		current_bucket = togo_hashtable_bucket(hashtable->expand_total_bucket,
-				key, len);
-		bucket = (hashtable->expand_bucket + current_bucket);
 
-		/* If other thread run the function of "togo_hashtable_expand_finish"*/
-		if (expand_success
-				!= hashtable->expand_success|| hashtable->expand_status == FALSE) {
-			pthread_mutex_lock(&hashtable->global_lock);
-			current = togo_hashtable_get_general(hashtable, key);
-			pthread_mutex_unlock(&hashtable->global_lock);
+		pthread_mutex_lock(&hashtable->global_lock);
 
-		} else {
-			lock = togo_hashtable_get_expand_lock(hashtable, current_bucket);
-			if (lock == NULL) {
-				togo_log(INFO,
-						"togo_hashtable_get:togo_hashtable_get_expand_lock NULL");
-				return FALSE;
-			}
-			pthread_mutex_lock(lock);
+		if (hashtable->expand_status == TRUE) {
+			current_bucket = togo_hashtable_bucket(
+					hashtable->expand_total_bucket, key, len);
+			bucket = (hashtable->expand_bucket + current_bucket);
 
 			item = bucket->item;
 			while (item != NULL) {
-
 				if (len == item->key_len
 						&& togo_strncmp(item->key, key, len) == 0) {
 					current = item;
@@ -263,8 +224,13 @@ TOGO_HASHTABLE_ITEM * togo_hashtable_get(TOGO_HASHTABLE * hashtable,
 				item = item->next;
 			}
 
-			pthread_mutex_unlock(lock);
+			/* Every operation of add/get/remove,
+			 * We move TOGO_HASHTABLE_EXPAND_STEP bucket
+			 * from old table to new table!*/
+			togo_hashtable_expand_do(hashtable);
 		}
+
+		pthread_mutex_unlock(&hashtable->global_lock);
 	}
 
 	return current;
@@ -292,6 +258,7 @@ BOOL togo_hashtable_flush(TOGO_HASHTABLE * hashtable)
 
 	/* If the hashtable is expanding, need to flush the expand table*/
 	if (hashtable->expand_status == TRUE) {
+
 		bucket = hashtable->expand_bucket;
 		for (j = 0; j < hashtable->expand_total_bucket; j++) {
 			while (bucket->item != NULL) {
@@ -313,6 +280,7 @@ BOOL togo_hashtable_flush(TOGO_HASHTABLE * hashtable)
 		hashtable->expand_bucket = NULL;
 		hashtable->expand_lock = NULL;
 		hashtable->expand_total_bucket = 0;
+
 	}
 
 	hashtable->total_get = 0;
@@ -334,8 +302,8 @@ static void togo_hashtable_add_general(TOGO_HASHTABLE * hashtable,
 	current_bucket = togo_hashtable_bucket(hashtable->total_bucket, item->key,
 			item->key_len);
 	bucket = (hashtable->bucket + current_bucket);
-
 	lock = togo_hashtable_get_general_lock(hashtable, current_bucket);
+
 	pthread_mutex_lock(lock);
 
 	item->next = bucket->item;
@@ -444,7 +412,6 @@ static void togo_hashtable_expand_init(TOGO_HASHTABLE * hashtable)
 	lock = (pthread_mutex_t *) togo_pool_calloc(hashtable->pool,
 			sizeof(pthread_mutex_t) * lock_num);
 	if (lock == NULL) {
-
 		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET lock fail");
 		pthread_mutex_unlock(&hashtable->global_lock);
 		return;
@@ -453,7 +420,6 @@ static void togo_hashtable_expand_init(TOGO_HASHTABLE * hashtable)
 		for (i = 0; i < lock_num; i++) {
 			pthread_mutex_init((lock + i), NULL);
 		}
-
 	}
 
 	/* Bucket */
@@ -478,6 +444,9 @@ static void togo_hashtable_expand_init(TOGO_HASHTABLE * hashtable)
 	hashtable->expand_lock = lock;
 	hashtable->expand_bucket = bucket;
 
+	togo_log(INFO, "togo hashtable expanding! bucket size: %d",
+			expand_total_bucket);
+
 	pthread_mutex_unlock(&hashtable->global_lock);
 }
 
@@ -490,13 +459,6 @@ static void togo_hashtable_expand_do(TOGO_HASHTABLE * hashtable)
 	TOGO_HASHTABLE_ITEM * old_item;
 	pthread_mutex_t * lock;
 	pthread_mutex_t * expand_lock;
-
-	pthread_mutex_lock(&hashtable->global_lock);
-
-	if (hashtable->expand_status == FALSE) {
-		pthread_mutex_unlock(&hashtable->global_lock);
-		return;
-	}
 
 	curr = hashtable->expand_curr;
 	step = curr + TOGO_HASHTABLE_EXPAND_STEP;
@@ -518,31 +480,24 @@ static void togo_hashtable_expand_do(TOGO_HASHTABLE * hashtable)
 		old_bucket = (hashtable->bucket + curr);
 		old_item = old_bucket->item;
 		while (old_item != NULL) {
+
 			item = old_item;
 			old_item = old_item->next;
+			old_bucket->item = old_item;
+
 			current_bucket = togo_hashtable_bucket(
 					hashtable->expand_total_bucket, item->key, item->key_len);
 			bucket = (hashtable->expand_bucket + current_bucket);
 
-			expand_lock = togo_hashtable_get_expand_lock(hashtable,
-					current_bucket);
-			if (expand_lock == NULL) {
-				continue;
-			}
-			pthread_mutex_lock(expand_lock);
-
 			item->next = bucket->item;
 			bucket->item = item;
 			bucket->size++;
-
-			pthread_mutex_unlock(expand_lock);
 		}
 
 		pthread_mutex_unlock(lock);
 		hashtable->expand_curr++;
 	}
 
-	pthread_mutex_unlock(&hashtable->global_lock);
 }
 
 static void togo_hashtable_expand_finish(TOGO_HASHTABLE * hashtable)
@@ -558,12 +513,15 @@ static void togo_hashtable_expand_finish(TOGO_HASHTABLE * hashtable)
 	old_bucket = hashtable->bucket;
 	old_lock = hashtable->lock;
 
-	hashtable->expand_success++;
 	hashtable->bucket = hashtable->expand_bucket;
 	hashtable->lock = hashtable->expand_lock;
 	hashtable->total_bucket = hashtable->expand_total_bucket;
-	hashtable->expand_curr = 0;
 	hashtable->expand_status = FALSE;
+	hashtable->expand_success++;
+	hashtable->expand_curr = 0;
+	hashtable->expand_bucket = NULL;
+	hashtable->expand_lock = NULL;
+	hashtable->expand_total_bucket = 0;
 
 	/* Free the old bucket and old lock !*/
 	togo_pool_free_data(hashtable->pool, (void *) old_bucket);
@@ -578,22 +536,6 @@ static pthread_mutex_t * togo_hashtable_get_general_lock(
 	pthread_mutex_t * lock;
 	x = togo_hashtable_get_lock(current_bucket, TOGO_HASHTABLE_LOCK_SIZE);
 	lock = (pthread_mutex_t *) (hashtable->lock + x);
-	return lock;
-}
-
-static pthread_mutex_t * togo_hashtable_get_expand_lock(
-		TOGO_HASHTABLE * hashtable, uint32_t current_bucket)
-{
-	uint32_t x;
-	pthread_mutex_t * lock;
-	pthread_mutex_t * expand_lock;
-	expand_lock = hashtable->expand_lock;
-	x = togo_hashtable_get_lock(current_bucket, TOGO_HASHTABLE_LOCK_SIZE);
-	if (hashtable->expand_status == FALSE || expand_lock == NULL) {
-		return NULL;
-	} else {
-		lock = (pthread_mutex_t *) (expand_lock + x);
-	}
 	return lock;
 }
 
