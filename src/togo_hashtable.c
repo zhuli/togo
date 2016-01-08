@@ -8,6 +8,8 @@
 #include "togo.h"
 #include "togo_load.h"
 
+static TOGO_HASHTABLE * togo_hashtable_init_common(TOGO_HASHTABLE * hashtable,
+		TOGO_POOL * pool);
 static void togo_hashtable_expand_init(TOGO_HASHTABLE * hashtable);
 static void togo_hashtable_expand_do(TOGO_HASHTABLE * hashtable);
 static void togo_hashtable_expand_finish(TOGO_HASHTABLE * hashtable);
@@ -23,20 +25,6 @@ static pthread_mutex_t * togo_hashtable_get_general_lock(
 
 TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool)
 {
-	uint32_t i;
-	TOGO_HASHTABLE_BUCKET * bucket_temp;
-
-	TOGO_HASHTABLE_BUCKET * bucket = (TOGO_HASHTABLE_BUCKET *) togo_pool_calloc(
-			pool, sizeof(TOGO_HASHTABLE_BUCKET) * TOGO_HASHTABLE_BUCKET_NUM);
-	if (bucket == NULL) {
-		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET fail");
-		togo_exit();
-	}
-	for (i = 0; i < TOGO_HASHTABLE_BUCKET_NUM; i++) {
-		bucket_temp = (TOGO_HASHTABLE_BUCKET *) (bucket + i);
-		bucket_temp->item = NULL;
-		bucket_temp->size = 0;
-	}
 
 	TOGO_HASHTABLE *hashtable = (TOGO_HASHTABLE *) togo_pool_calloc(pool,
 			sizeof(TOGO_HASHTABLE));
@@ -44,38 +32,29 @@ TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool)
 		togo_log(ERROR, "malloc TOGO_HASHTABLE fail");
 		togo_exit();
 	}
+	/* Initializes the global variables */
+	hashtable->v_bucket_num = TOGO_HASHTABLE_BUCKET_NUM;
+	hashtable->v_lock_size = TOGO_HASHTABLE_LOCK_SIZE;
+	hashtable->v_expand_step = TOGO_HASHTABLE_EXPAND_STEP;
 
-	/* Init Hashtable lock */
-	uint32_t lock_num = TOGO_HASHTABLE_BUCKET_NUM / TOGO_HASHTABLE_LOCK_SIZE;
-	pthread_mutex_t * lock = (pthread_mutex_t *) togo_pool_calloc(pool,
-			sizeof(pthread_mutex_t) * lock_num);
-	if (lock == NULL) {
-		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET lock fail");
+	return togo_hashtable_init_common(hashtable, pool);
+}
+
+TOGO_HASHTABLE * togo_hashtable_init_option(TOGO_POOL * pool,
+		uint32_t bucket_num, uint32_t lock_size, uint32_t expand_step)
+{
+	TOGO_HASHTABLE *hashtable = (TOGO_HASHTABLE *) togo_pool_calloc(pool,
+			sizeof(TOGO_HASHTABLE));
+	if (hashtable == NULL) {
+		togo_log(ERROR, "malloc TOGO_HASHTABLE fail");
 		togo_exit();
 	}
-	for (i = 0; i < lock_num; i++) {
-		pthread_mutex_init((lock + i), NULL);
-	}
+	/* Initializes the global variables */
+	hashtable->v_bucket_num = bucket_num;
+	hashtable->v_lock_size = lock_size;
+	hashtable->v_expand_step = expand_step;
 
-	pthread_mutex_init(&hashtable->global_lock, NULL);
-
-	hashtable->pool = pool;
-	hashtable->lock = lock;
-	hashtable->bucket = bucket;
-	hashtable->total_get = 0;
-	hashtable->total_remove = 0;
-	hashtable->total_size = 0;
-	hashtable->total_bucket = TOGO_HASHTABLE_BUCKET_NUM; //default 1024
-
-	hashtable->expand_status = FALSE;
-	hashtable->expand_success = 0;
-	hashtable->expand_curr = 0;
-	hashtable->expand_num = 0;
-	hashtable->expand_total_bucket = 0;
-	hashtable->expand_bucket = NULL;
-	hashtable->expand_lock = NULL;
-
-	return hashtable;
+	return togo_hashtable_init_common(hashtable, pool);
 }
 
 BOOL togo_hashtable_add(TOGO_HASHTABLE * hashtable, u_char *key, void * p)
@@ -292,6 +271,57 @@ BOOL togo_hashtable_flush(TOGO_HASHTABLE * hashtable)
 	return TRUE;
 }
 
+static TOGO_HASHTABLE * togo_hashtable_init_common(TOGO_HASHTABLE * hashtable,
+		TOGO_POOL * pool)
+{
+	uint32_t i;
+	TOGO_HASHTABLE_BUCKET * bucket_temp;
+
+	TOGO_HASHTABLE_BUCKET * bucket = (TOGO_HASHTABLE_BUCKET *) togo_pool_calloc(
+			pool, sizeof(TOGO_HASHTABLE_BUCKET) * hashtable->v_bucket_num);
+	if (bucket == NULL) {
+		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET fail");
+		togo_exit();
+	}
+	for (i = 0; i < hashtable->v_bucket_num; i++) {
+		bucket_temp = (TOGO_HASHTABLE_BUCKET *) (bucket + i);
+		bucket_temp->item = NULL;
+		bucket_temp->size = 0;
+	}
+
+	/* Init Hashtable lock */
+	uint32_t lock_num = hashtable->v_bucket_num / hashtable->v_lock_size;
+	pthread_mutex_t * lock = (pthread_mutex_t *) togo_pool_calloc(pool,
+			sizeof(pthread_mutex_t) * lock_num);
+	if (lock == NULL) {
+		togo_log(ERROR, "malloc TOGO_HASHTABLE_BUCKET lock fail");
+		togo_exit();
+	}
+	for (i = 0; i < lock_num; i++) {
+		pthread_mutex_init((lock + i), NULL);
+	}
+
+	pthread_mutex_init(&hashtable->global_lock, NULL);
+
+	hashtable->pool = pool;
+	hashtable->lock = lock;
+	hashtable->bucket = bucket;
+	hashtable->total_get = 0;
+	hashtable->total_remove = 0;
+	hashtable->total_size = 0;
+	hashtable->total_bucket = hashtable->v_bucket_num; //default 1024
+
+	hashtable->expand_status = FALSE;
+	hashtable->expand_success = 0;
+	hashtable->expand_curr = 0;
+	hashtable->expand_num = 0;
+	hashtable->expand_total_bucket = 0;
+	hashtable->expand_bucket = NULL;
+	hashtable->expand_lock = NULL;
+
+	return hashtable;
+}
+
 static void togo_hashtable_add_general(TOGO_HASHTABLE * hashtable,
 		TOGO_HASHTABLE_ITEM * item)
 {
@@ -408,7 +438,7 @@ static void togo_hashtable_expand_init(TOGO_HASHTABLE * hashtable)
 
 	/* Lock */
 	expand_total_bucket = togo_hashtable_expand_size(hashtable->total_bucket);
-	lock_num = expand_total_bucket / TOGO_HASHTABLE_LOCK_SIZE;
+	lock_num = expand_total_bucket / hashtable->v_lock_size;
 	lock = (pthread_mutex_t *) togo_pool_calloc(hashtable->pool,
 			sizeof(pthread_mutex_t) * lock_num);
 	if (lock == NULL) {
@@ -461,7 +491,7 @@ static void togo_hashtable_expand_do(TOGO_HASHTABLE * hashtable)
 	pthread_mutex_t * expand_lock;
 
 	curr = hashtable->expand_curr;
-	step = curr + TOGO_HASHTABLE_EXPAND_STEP;
+	step = curr + hashtable->v_expand_step;
 	for (curr; curr < step; curr++) {
 
 		if (curr == hashtable->total_bucket) {
@@ -534,7 +564,7 @@ static pthread_mutex_t * togo_hashtable_get_general_lock(
 {
 	uint32_t x;
 	pthread_mutex_t * lock;
-	x = togo_hashtable_get_lock(current_bucket, TOGO_HASHTABLE_LOCK_SIZE);
+	x = togo_hashtable_get_lock(current_bucket, hashtable->v_lock_size);
 	lock = (pthread_mutex_t *) (hashtable->lock + x);
 	return lock;
 }

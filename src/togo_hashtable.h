@@ -42,6 +42,10 @@ struct togo_hashtable {
 	uint32_t total_bucket;
 	TOGO_POOL * pool; /* Worker memory pool */
 
+	uint32_t v_bucket_num; /* TOGO_HASHTABLE_BUCKET_NUM */
+	uint32_t v_lock_size; /* TOGO_HASHTABLE_LOCK_SIZE */
+	uint32_t v_expand_step; /* TOGO_HASHTABLE_EXPAND_STEP */
+
 	BOOL expand_status;
 	uint32_t expand_success;
 	uint32_t expand_curr;
@@ -52,6 +56,8 @@ struct togo_hashtable {
 };
 
 TOGO_HASHTABLE * togo_hashtable_init(TOGO_POOL * pool);
+TOGO_HASHTABLE * togo_hashtable_init_option(TOGO_POOL * pool,
+		uint32_t bucket_num, uint32_t lock_size, uint32_t expand_step);
 BOOL togo_hashtable_add(TOGO_HASHTABLE * hashtable, u_char *key, void * p);
 BOOL togo_hashtable_remove(TOGO_HASHTABLE * hashtable, u_char *key);
 TOGO_HASHTABLE_ITEM * togo_hashtable_get(TOGO_HASHTABLE * hashtable,
