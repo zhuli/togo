@@ -8,6 +8,11 @@
 #ifndef TOGO_ALLOC_H
 #define TOGO_ALLOC_H
 
+#define TOGO_ALIGNMENT   sizeof(unsigned long)    /* platform word */
+#define togo_align(d, a)     (((d) + (a - 1)) & ~(a - 1))
+#define togo_align_ptr(p, a)                                                   \
+    (u_char *) (((uintptr_t) (p) + ((uintptr_t) a - 1)) & ~((uintptr_t) a - 1))
+
 #define togo_memzero(buf, n)       (void) memset(buf, 0, n)
 #define togo_memset(buf, c, n)     (void) memset(buf, c, n)
 #define togo_free free

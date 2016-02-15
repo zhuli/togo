@@ -166,10 +166,10 @@ void * togo_pool_alloc(TOGO_POOL * pool, size_t size)
 
 		/* Search the free block */
 		do {
-			p = block->used;
-			space = (size_t) abs(block->end - block->used);
+			p = (void *) togo_align_ptr(block->used, TOGO_ALIGNMENT);
+			space = (size_t) abs(block->end - (u_char *) p);
 
-			if (space > dsize && (block->end > block->used)) {
+			if (space > dsize && (block->end > (u_char *) p)) {
 
 				block->used = p + dsize;
 				p = togo_pool_build_data(pool, size, p, block);
